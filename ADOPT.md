@@ -48,7 +48,7 @@ List every file you will create or change, one line each saying what goes in, me
 - A rule file with `paths:` frontmatter: **[CC]** write it to `.claude/rules/<module>.md`, keeping the frontmatter. Other agents: merge it into AGENTS.md under `## When editing <paths>`.
 - A rule file with `## Claude Code` and `## Other agents` sections: keep only the content of the section that matches you, without that section's heading.
 - Skip rules the target already has in substance, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
-- Replace every `{{PLACEHOLDER}}` with the user's answer. When an answer is empty, delete the line that held the placeholder.
+- Replace every `{{PLACEHOLDER}}` with the user's answer. When an answer is empty and the placeholder is all its line or list item holds, delete that line; when it sits inside a longer line, replace it with nothing.
 
 **Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`).
 

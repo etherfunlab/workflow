@@ -20,10 +20,12 @@ Internal mode keeps the Simplified terms because Simplified Chinese has far more
 2. Change values and body text only. Keys, structure and order stay.
 3. Convert.
    - Internal: `opencc -c s2hk -i <in> -o <out>`, then check the whitelist below.
-   - External: glyphs with `opencc -c s2hk` (Hong Kong) or `opencc -c s2twp` (Taiwan), then vocabulary. Common pairs: 信息→資訊, 视频→影片, 软件→軟體, 网络→網路, 界面→介面, 数据→資料, 登录→登入, 注销→登出, 设置→設定, 添加→加入, 访问→造訪, 恢复→復原, 通过→透過, 支持→支援, 默认→預設, 消息→訊息, 屏幕→螢幕, 点击→點按, 菜单→選單, 加载→載入. The list is not exhaustive; the test is the term a product UI in that market uses.
+   - External: glyphs with `opencc -c s2hk` (Hong Kong) or `opencc -c s2twp` (Taiwan, which already swaps some vocabulary), then vocabulary. Common pairs (Taiwan): 信息→資訊, 视频→影片, 软件→軟體, 网络→網路, 界面→介面, 数据→資料, 登录→登入, 注销→登出, 设置→設定, 添加→加入, 访问→造訪, 恢复→復原, 通过→透過, 支持→支援, 默认→預設, 消息→訊息, 屏幕→螢幕, 点击→點按, 菜单→選單, 加载→載入. The list is not exhaustive; the test is the term a product UI in that market uses.
 4. Never converted, kept verbatim: `{token}` and other placeholders, link references, brand words ({{BRAND_TERMS}}), proper nouns, URLs, email addresses, code.
 5. Punctuation stays full-width; 「——」 stays.
-6. Verify with {{ZH_HANT_CHECK_CMD}}, then `git diff -- {{ZH_HANT_PATHS}}` shows only the target content changed.
+6. Verify:
+   - {{ZH_HANT_CHECK_CMD}}
+   - `git diff -- {{ZH_HANT_PATHS}}` shows only the target content changed.
 
 ## Red lines
 

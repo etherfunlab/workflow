@@ -45,7 +45,7 @@ set -a && . {{OPENROUTER_ENV_FILE}} && set +a && \
   python3 <this skill's directory>/openrouter_review.py --prompt "$TMPDIR/prompt.txt" --out "$TMPDIR/review.md"
 ```
 
-- One call per review. The script retries only a 5xx or timeout of the same call. If the result is weak, stop and give it to the user; never rewrite the prompt and run again on your own.
+- One call per review. The script re-sends the same request only on a 5xx, a timeout or a connection failure, at most twice. If the result is weak, stop and give it to the user; never rewrite the prompt and run again on your own.
 - Before use, list `https://openrouter.ai/api/v1/models` for `openai/gpt-*`; pass `--model` when a newer flagship exists.
 - Never print the key.
 - Report it as what it is: codex did not run; GPT through OpenRouter did.

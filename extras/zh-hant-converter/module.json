@@ -4,16 +4,33 @@
   "role": "extra",
   "depends_on": [],
   "rules": [],
-  "skills": ["zh-hant-converter"],
+  "skills": [
+    "zh-hant-converter"
+  ],
   "hooks": [],
   "git_hooks": [],
-  "requires": ["opencc"],
+  "requires": [
+    "opencc",
+    "git"
+  ],
   "upstream_skills": [],
   "placeholders": {
-    "ZH_HANS_PATHS": {"description": "Simplified Chinese source files or directories", "default": "docs/"},
-    "ZH_HANT_PATHS": {"description": "Traditional Chinese output files or directories", "default": "docs/zh-hant/"},
-    "BRAND_TERMS": {"description": "brand words never converted, comma-separated", "default": "none"},
-    "ZH_HANT_CHECK_CMD": {"description": "command that validates converted files (tests, key parity); 'no automated check' if none", "default": "no automated check"}
+    "ZH_HANS_PATHS": {
+      "description": "Simplified Chinese source files or directories",
+      "default": "docs/"
+    },
+    "ZH_HANT_PATHS": {
+      "description": "Traditional Chinese output files or directories",
+      "default": "docs/zh-hant/"
+    },
+    "BRAND_TERMS": {
+      "description": "brand words never converted, comma-separated",
+      "default": "none"
+    },
+    "ZH_HANT_CHECK_CMD": {
+      "description": "command that validates converted files (tests, key parity); empty if none",
+      "default": ""
+    }
   },
   "copies": []
 }

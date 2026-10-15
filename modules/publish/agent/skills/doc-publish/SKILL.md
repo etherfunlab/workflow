@@ -17,7 +17,7 @@ Runs the finishing pipeline. Each stage is its own skill; this one decides which
 |---|---|
 | Staying a draft | fact-check only |
 | Going to published | fact-check → polish → review |
-| A draft whose content is all live, with nothing pending | all three at once |
+| A draft whose content is all live, with nothing pending | all three in one go, still in order |
 
 Drafts often describe work that has not shipped yet. Polishing them early is wasted when the facts move.
 
