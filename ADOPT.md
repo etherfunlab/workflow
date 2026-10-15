@@ -31,7 +31,7 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
 3. **Skill location:** project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
 4. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
 
-Then ask for each `placeholders` key of the chosen modules, offering its `default`. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
+Then ask for each `placeholders` key of the chosen modules, offering its `default`; `<skills-dir>` in a default means the skill location chosen in question 3. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
 
 ## 3. Show the change list, then wait
 
@@ -50,15 +50,21 @@ List every file you will create or change, one line each saying what goes in, me
 - Skip rules the target already has in substance, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
 - Replace every `{{PLACEHOLDER}}` with the user's answer. When an answer is empty and the placeholder is all its line or list item holds, delete that line; when it sits inside a longer line, replace it with nothing.
 
-**Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`).
+**Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`). When a skill with the same name already exists there and differs, show the difference and ask whether to replace it, keep the existing one, or skip; never overwrite it silently.
 
 **Third-party skills** (`upstream_skills`): when one is not installed, show the user its URL and the install command from its README; install it only with a yes.
 
 **Copies** (`copies`): copy `from` to `to` when `to` does not exist.
 
-**Git hooks** (`git_hooks`): copy them to `.githooks/` and `chmod +x`. If the target has no pre-push hook and `core.hooksPath` is unset, run `git config core.hooksPath .githooks`. If a pre-push hook exists, keep it and add one line calling `.githooks/<module>-pre-push.sh`; do not copy `pre-push`.
+**Git hooks** (`git_hooks`): copy the module's scripts to `.githooks/` and `chmod +x`; when a file with the same name already exists there and differs, ask before replacing it. The active hooks directory is the value of `git config core.hooksPath`, else `.git/hooks`.
 
-**Hooks [CC]** (`hooks`, only those the user accepted): copy `file` to `install_to`, then add an entry to `.claude/settings.json` (or `~/.claude/settings.json` when `install_to` starts with `~`), appending to the existing arrays and never replacing entries:
+- No pre-push hook there and `core.hooksPath` unset: run `git config core.hooksPath .githooks` and keep the copied `pre-push`.
+- No pre-push hook there and `core.hooksPath` set to another directory: create a pre-push hook in that directory that runs the call line below; leave `core.hooksPath` as it is.
+- A pre-push hook exists there: keep it and insert the call line right after its shebang, before any `exit` or `exec`, so it always runs; do not copy `pre-push`.
+
+The call line is `"$(git rev-parse --show-toplevel)/.githooks/<module>-pre-push.sh" || exit 1`.
+
+**Hooks [CC]** (`hooks`, only those the user accepted): copy `file` to `install_to`, then add an entry to `.claude/settings.json` (or `~/.claude/settings.json` when `install_to` starts with `~`), appending to the existing arrays and never replacing entries. Skip an entry whose command is already registered for that event:
 
 ```json
 {"hooks": {"<event>": [{"matcher": "<matcher>", "hooks": [{"type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/<install_to>"}]}]}}
@@ -86,7 +92,7 @@ JSON at the target's root, committed with the target:
 }
 ```
 
-`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again. Insert no markers into rule files; the lock is the only record of where things came from.
+`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again. A module's own `commit` (optional) overrides the top-level one; section 7 sets it when the user declines that module's upstream changes. Insert no markers into rule files; the lock is the only record of where things came from.
 
 ## 6. Report
 
@@ -98,9 +104,9 @@ JSON at the target's root, committed with the target:
 
 ## 7. Update
 
-1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> extras/<name> template`.
+1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> extras/<name> template`, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`.
 2. Summarize the changes per module in plain words: rule added, rule removed, wording changed, placeholder added, file renamed.
 3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes. A rule listed in `skipped` is not offered again unless it changed upstream.
 4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections.
-5. Update `commit` and `adopted_at`, and `files` when they changed.
+5. Set the top-level `commit` to upstream HEAD and update `adopted_at`, and `files` when they changed. For each module whose changes the user declined, set its own `commit` to the commit it was last updated from, so the next update offers those changes again; remove a module's own `commit` once its changes are applied.
 6. Report as in section 6.
