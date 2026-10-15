@@ -1,0 +1,17 @@
+{
+  "name": "publish",
+  "principles": [3],
+  "role": "skills",
+  "depends_on": ["writing"],
+  "rules": [],
+  "skills": ["doc-publish", "doc-fact-check", "doc-polish", "doc-review"],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": ["perl", "git"],
+  "upstream_skills": [],
+  "placeholders": {
+    "PRECHECK_PATH": {"description": "path to precheck.sh in the target repo", "default": ".claude/skills/doc-publish/precheck.sh"},
+    "PUBLISH_CMD": {"description": "command that builds or validates the docs before push; empty removes that line", "default": ""}
+  },
+  "copies": []
+}
