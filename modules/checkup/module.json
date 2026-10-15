@@ -1,0 +1,16 @@
+{
+  "name": "checkup",
+  "principles": [5],
+  "role": "tool",
+  "depends_on": [],
+  "rules": [],
+  "skills": ["rules-checkup"],
+  "hooks": [
+    {"file": "agent/hooks/checkup-reminder.sh", "event": "SessionStart", "matcher": "", "optional": true, "install_to": "~/.claude/hooks/checkup-reminder.sh"}
+  ],
+  "git_hooks": [],
+  "requires": ["jq", "perl"],
+  "upstream_skills": [],
+  "placeholders": {},
+  "copies": []
+}
