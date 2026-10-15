@@ -16,7 +16,7 @@
 - **`.memory/` 是只读镜像。** 不要直接改 `.memory/` 里的文件，下次同步会覆盖；改记忆本身，让 hook 去同步。`.memory/README.md` 是镜像自己的说明，同步时保留。
 - **两个 hook：**
   - PostToolUse hook（可选，仅 Claude Code）：agent 用 Write 或 Edit 写入记忆文件时，把整个记忆目录同步到 `.memory/`。
-  - git pre-push hook：push 之前再同步一次，有变化就单独提交一个 `chore: sync .memory mirror`（只提交 `.memory/`，你暂存的其他改动不受影响），然后中断这次 push。这是预期行为：git 在 hook 运行前已经定下要推哪些提交，新提交要再 push 一次才会带上。
+  - git pre-push hook：push 之前再同步一次，有变化就单独提交一个 `chore: sync .memory mirror`（只提交 `.memory/`，你暂存的其他改动不受影响），然后中断这次 push；同步或提交失败时，它说明原因，让这次 push 照常进行。中断是预期行为：git 在 hook 运行前已经定下要推哪些提交，新提交要再 push 一次才会带上。
 - **其他 agent 没有 auto-memory。** 那就把 `.memory/` 当成这个仓的 agent 记忆：`.memory/MEMORY.md` 做索引，一个事实一个文件、在索引里占一行，直接改、随任务提交。
 
 完整规则在 [`agent/rules/memory.md`](agent/rules/memory.md)。
@@ -25,10 +25,10 @@
 
 - 主规则文件（AGENTS.md，没有的话是 CLAUDE.md）里的一节 `## Memory`，只保留和你的 agent 对应的那一半。
 - `.memory/README.md`，说明这个目录是镜像。
-- `.githooks/` 下的 `memory-lib.sh`、`memory-pre-push.sh` 和 `pre-push`。你还没有 pre-push hook、也没设过 `core.hooksPath` 时，ADOPT 把它设成 `.githooks`；已经有 pre-push hook 的话，ADOPT 不复制 `pre-push`，只在你的 hook 里加一行调用。
+- `.githooks/` 下的 `memory-lib.sh`、`memory-pre-push.sh` 和 `pre-push`。你还没有 pre-push hook、也没设过 `core.hooksPath` 时，ADOPT 把它设成 `.githooks`；`core.hooksPath` 已经指向别的目录（比如 `.husky/`）但那里没有 pre-push 时，ADOPT 在那个目录里新建一个，`core.hooksPath` 不动；已经有 pre-push hook 的话，ADOPT 不复制 `pre-push`，只在你的 hook 开头加一行调用。
 - 可选（仅 Claude Code）：`.githooks/memory-mirror.sh`，注册成 `.claude/settings.json` 里的 PostToolUse hook，追加在你已有的 hook 后面。
 
-Claude Code 给记忆目录起名，是把仓库的绝对路径里的分隔符换成 `-`。hook 比较时，目录名和仓库路径两边都把连续的非 ASCII 字母数字字符（空格、中文都算）替换成一个 `-`；仓库路径还会用 `pwd -P` 取物理路径再比一次。所以路径里有空格、中文，或者经过符号链接，都能找到对应目录。
+Claude Code 给记忆目录起名，是把仓库的绝对路径里的分隔符换成 `-`。hook 先按这个规则精确匹配目录名；找不到时才做宽松比较：目录名和仓库路径两边都把连续的非 ASCII 字母数字字符（空格、中文都算）替换成一个 `-`，仓库路径还会用 `pwd -P` 取物理路径再比一次，而且只认唯一命中。所以路径里有空格、中文，或者经过符号链接，都能找到对应目录；两个只差标点的仓（`a_b` 和 `a-b`）不会共用一份镜像。
 
 ## 依赖
 

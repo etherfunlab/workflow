@@ -45,6 +45,7 @@ List every file you will create or change, one line each saying what goes in, me
 
 - A rule file without `paths:` frontmatter is merged into the target's main rule file under a `##` heading named after the module (`## Engineering`): the rule file's own `#` title is replaced by that heading and its `##` sections become `###`. The main rule file is AGENTS.md if it exists; else CLAUDE.md if it exists; else create AGENTS.md (and for Claude Code a CLAUDE.md containing `@AGENTS.md`).
 - When the main rule file is an index (a "Read in this order" or directory table, as in `template/AGENTS.md`), add a row for each rule file or directory you create.
+- **[CC]** Claude Code loads CLAUDE.md, not AGENTS.md. Whenever rules go into AGENTS.md and CLAUDE.md does not already import it, add the line `@AGENTS.md` to CLAUDE.md (creating CLAUDE.md if needed) and include that in the change list.
 - A rule file with `paths:` frontmatter: **[CC]** write it to `.claude/rules/<module>.md`, keeping the frontmatter. Other agents: merge it into AGENTS.md under `## When editing <paths>`.
 - A rule file with `## Claude Code` and `## Other agents` sections: keep only the content of the section that matches you, without that section's heading.
 - Skip rules the target already has in substance, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
@@ -56,7 +57,7 @@ List every file you will create or change, one line each saying what goes in, me
 
 **Copies** (`copies`): copy `from` to `to` when `to` does not exist.
 
-**Git hooks** (`git_hooks`): copy the module's scripts to `.githooks/` and `chmod +x`; when a file with the same name already exists there and differs, ask before replacing it. The active hooks directory is the value of `git config core.hooksPath`, else `.git/hooks`.
+**Git hooks** (`git_hooks`): copy the module's scripts except `pre-push` to `.githooks/` and `chmod +x` (the cases below decide whether `pre-push` is copied); when a file with the same name already exists there and differs, ask before replacing it. The active hooks directory is the value of `git config core.hooksPath`, else `.git/hooks`.
 
 - No pre-push hook there and `core.hooksPath` unset: run `git config core.hooksPath .githooks` and keep the copied `pre-push`.
 - No pre-push hook there and `core.hooksPath` set to another directory: create a pre-push hook in that directory that runs the call line below; leave `core.hooksPath` as it is.

@@ -89,6 +89,8 @@ def main() -> None:
         hp = subprocess.run(["git", "-C", str(t), "config", "core.hooksPath"], capture_output=True, text=True).stdout.strip()
         if hp != ".husky":
             errs.append(f"core.hooksPath changed to {hp!r}")
+        if "## Memory" in read(t / "AGENTS.md") and "@AGENTS.md" not in read(t / "CLAUDE.md"):
+            errs.append("rules went into AGENTS.md but CLAUDE.md does not import it, so Claude Code never loads them")
 
     for e in errs:
         print(e)
