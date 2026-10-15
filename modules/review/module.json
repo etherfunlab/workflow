@@ -1,0 +1,18 @@
+{
+  "name": "review",
+  "principles": [7],
+  "role": "skills",
+  "depends_on": [],
+  "rules": [],
+  "skills": ["codex-review"],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": ["codex", "python3"],
+  "upstream_skills": [],
+  "placeholders": {
+    "BASE_BRANCH": {"description": "branch reviews diff against", "default": "origin/main"},
+    "REVIEW_GLOBS": {"description": "pathspecs that keep generated files and docs out of the review, e.g. '*.ts' '*.sql'; empty for everything", "default": ""},
+    "OPENROUTER_ENV_FILE": {"description": "env file holding OPENROUTER_API_KEY for the optional fallback", "default": ".env"}
+  },
+  "copies": []
+}
