@@ -1,16 +1,28 @@
 {
   "name": "writing",
-  "principles": [5],
-  "role": "tool",
+  "principles": [
+    5
+  ],
+  "role": "rules",
   "depends_on": [],
-  "rules": ["agent/rules/writing.md"],
+  "rules": [
+    "agent/rules/writing.md"
+  ],
   "skills": [],
   "hooks": [],
   "git_hooks": [],
   "requires": [],
   "upstream_skills": [
-    {"name": "human-writing", "url": "https://github.com/Tao716/human-writing-skill", "for": "Chinese prose"},
-    {"name": "humanizer", "url": "https://github.com/blader/humanizer", "for": "English prose"}
+    {
+      "name": "human-writing",
+      "url": "https://github.com/Tao716/human-writing-skill",
+      "for": "Chinese prose"
+    },
+    {
+      "name": "humanizer",
+      "url": "https://github.com/blader/humanizer",
+      "for": "English prose"
+    }
   ],
   "placeholders": {},
   "copies": []

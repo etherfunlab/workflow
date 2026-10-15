@@ -1,6 +1,6 @@
 # writing
 
-From the principle: Weak? Practice. It is a tool people use for active noise reduction: a person triggers it and a person decides.
+From the principle: Weak? Practice. It is the ruler people set for the agent: the agent writes by it, and people measure drafts against it in review.
 
 ## What it is
 
