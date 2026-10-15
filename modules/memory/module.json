@@ -1,0 +1,16 @@
+{
+  "name": "memory",
+  "principles": [4],
+  "role": "rules",
+  "depends_on": [],
+  "rules": ["agent/rules/memory.md"],
+  "skills": [],
+  "hooks": [
+    {"file": "agent/git-hooks/memory-mirror.sh", "event": "PostToolUse", "matcher": "Write|Edit", "optional": true, "install_to": ".githooks/memory-mirror.sh"}
+  ],
+  "git_hooks": ["agent/git-hooks/memory-lib.sh", "agent/git-hooks/memory-pre-push.sh", "agent/git-hooks/pre-push"],
+  "requires": ["rsync", "jq", "perl"],
+  "upstream_skills": [],
+  "placeholders": {},
+  "copies": [{"from": "agent/templates/memory-README.md", "to": ".memory/README.md"}]
+}

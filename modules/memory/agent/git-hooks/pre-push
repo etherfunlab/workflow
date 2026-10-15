@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# git pre-push entry point; each installed workflow hook is one line below.
+set -e
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$here/memory-pre-push.sh"
