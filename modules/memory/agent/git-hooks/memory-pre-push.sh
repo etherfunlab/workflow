@@ -9,7 +9,7 @@ src=$(memory_src_dir "$repo") || exit 0
 memory_sync "$src" "$repo/.memory"
 if [ -n "$(git -C "$repo" status --porcelain -- .memory)" ]; then
   git -C "$repo" add .memory
-  git -C "$repo" commit -q -m "chore: sync .memory mirror"
+  git -C "$repo" commit -q -m "chore: sync .memory mirror" -- .memory   # pathspec: leave other staged work out
   echo "[pre-push] committed the .memory mirror; run git push again to include it."
   exit 1
 fi

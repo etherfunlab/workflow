@@ -38,5 +38,10 @@ printf 'fact b\n' > "$mem/b.md"
 t_exit "pre-push commits drift and stops the push" 1 bash -c "cd '$repo' && .githooks/memory-pre-push.sh"
 t_out "drift commit message" "chore: sync .memory mirror" git -C "$repo" log -1 --format=%s
 t_exit "pre-push without drift passes" 0 bash -c "cd '$repo' && .githooks/pre-push"
+printf 'wip\n' > "$repo/staged.txt"; git -C "$repo" add staged.txt
+printf 'fact c\n' > "$mem/c.md"
+t_exit "pre-push with other staged work still stops" 1 bash -c "cd '$repo' && .githooks/memory-pre-push.sh"
+t_no_out "mirror commit leaves other staged files out" "staged\.txt" git -C "$repo" show --name-only --format= HEAD
+t_out "other staged file is still staged" "^A\s+staged\.txt" git -C "$repo" status --porcelain
 
 t_done memory
