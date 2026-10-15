@@ -1,0 +1,14 @@
+{
+  "name": "rules-files",
+  "principles": [6],
+  "role": "rules",
+  "depends_on": [],
+  "rules": ["agent/rules/rules-files.md"],
+  "skills": [],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": [],
+  "upstream_skills": [],
+  "placeholders": {},
+  "copies": []
+}

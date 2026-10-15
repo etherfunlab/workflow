@@ -1,0 +1,19 @@
+{
+  "name": "carriers",
+  "principles": [4, 6, 10],
+  "role": "rules",
+  "depends_on": [],
+  "rules": ["agent/rules/carriers.md"],
+  "skills": [],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": [],
+  "upstream_skills": [],
+  "placeholders": {
+    "DOCS_GLOBAL": {"description": "where the project-wide overall spec and docs for people live", "default": "docs/"},
+    "DOCS_SPECS": {"description": "where feature specs and plans live", "default": "docs/superpowers/"},
+    "SCHEMA_SOURCE": {"description": "the only source of schema definitions", "default": "migrations/*.sql"},
+    "API_SOURCE": {"description": "the only source of interface definitions", "default": "the code"}
+  },
+  "copies": []
+}

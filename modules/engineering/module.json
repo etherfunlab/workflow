@@ -1,0 +1,14 @@
+{
+  "name": "engineering",
+  "principles": [3, 6, 8],
+  "role": "rules",
+  "depends_on": [],
+  "rules": ["agent/rules/engineering.md"],
+  "skills": [],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": [],
+  "upstream_skills": [],
+  "placeholders": {},
+  "copies": []
+}
