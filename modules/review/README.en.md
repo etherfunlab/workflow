@@ -21,7 +21,7 @@ Say "review this branch with codex" or "codex review PR N". The agent writes a p
 
 The diff goes into the prompt inline, and codex is told not to explore the repository.
 
-Four traps make codex look dead or quietly skip its report:
+Four traps make codex look dead or end without writing its report:
 
 - End the command with `</dev/null`; backgrounded without it, codex waits for input forever.
 - Do not pipe codex's stdout: it decides stdin is wanted, reads EOF, exits 0 and never writes the report file. Redirect instead when you want a log.

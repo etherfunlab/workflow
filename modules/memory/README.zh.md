@@ -28,7 +28,7 @@
 - `.githooks/` 下的 `memory-lib.sh`、`memory-pre-push.sh` 和 `pre-push`。你还没有 pre-push hook、也没设过 `core.hooksPath` 时，ADOPT 把它设成 `.githooks`；已经有 pre-push hook 的话，ADOPT 不复制 `pre-push`，只在你的 hook 里加一行调用。
 - 可选（仅 Claude Code）：`.githooks/memory-mirror.sh`，注册成 `.claude/settings.json` 里的 PostToolUse hook，追加在你已有的 hook 后面。
 
-Claude Code 给记忆目录起名，是把仓库的绝对路径里的分隔符换成 `-`。hook 比较时，目录名和仓库路径两边都把连续的非 ASCII 字母数字字符（空格、中文都算）压成一个 `-`；仓库路径还会用 `pwd -P` 取物理路径再比一次。所以路径里有空格、中文，或者经过符号链接，都能找到对应目录。
+Claude Code 给记忆目录起名，是把仓库的绝对路径里的分隔符换成 `-`。hook 比较时，目录名和仓库路径两边都把连续的非 ASCII 字母数字字符（空格、中文都算）替换成一个 `-`；仓库路径还会用 `pwd -P` 取物理路径再比一次。所以路径里有空格、中文，或者经过符号链接，都能找到对应目录。
 
 ## 依赖
 

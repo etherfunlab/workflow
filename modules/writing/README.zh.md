@@ -33,11 +33,11 @@
 - 中文稿：[human-writing](https://github.com/Tao716/human-writing-skill)
 - 英文稿：[humanizer](https://github.com/blader/humanizer)
 
-技术文档里有两条以本仓规则为准，压过 human-writing 自带的禁令：
+技术文档里有两条以本仓规则为准，优先于 human-writing 自带的禁令：
 
 | human-writing 的规定 | 技术文档里 |
 |---|---|
 | 禁用破折号 | 中文破折号「——」保留 |
 | 禁用冒号 | 冒号照用；表格、命令、路径、代码块原样不动 |
 
-代码、命令、路径、表格、英文术语和并列条目走保守模式，不为了句式错落去改。
+代码、命令、路径、表格、英文术语和并列条目按保守模式处理，不为了句式错落去改。
