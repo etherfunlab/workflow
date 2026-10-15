@@ -1,0 +1,5 @@
+# Copy to precheck.conf next to precheck.sh to change the defaults.
+ZH_CHECKS=1
+CONTRAST_WARN=1
+# Command that validates frontmatter, run from the repo root. Empty skips it.
+FRONTMATTER_CMD=""
