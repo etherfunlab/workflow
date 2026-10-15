@@ -17,7 +17,7 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
 ## 1. Read before you ask
 
 1. Identify yourself: Claude Code, or another agent.
-2. Upstream is the copy of this repository you were given (a local path or GitHub). Record `git -C <upstream> rev-parse HEAD` as the commit. Record `upstream` as `git -C <upstream> remote get-url origin` when that is an https URL, else the path.
+2. Upstream is the copy of this repository you were given (a local path or GitHub). Work from its committed content at HEAD; if its working tree has uncommitted changes, say so in the report and ignore them. Record `git -C <upstream> rev-parse HEAD` as the commit. Record `upstream` as `git -C <upstream> remote get-url origin` when that is an https URL, else the path.
 3. Classify the target:
    - it has `.workflow.lock` → **update**, go to section 7;
    - it has no CLAUDE.md, AGENTS.md or `.claude/` → **new project**;
@@ -31,7 +31,7 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
 3. **Skill location:** project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
 4. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
 
-Then ask for each `placeholders` key of the chosen modules, offering its `default`. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
+Then ask for each `placeholders` key of the chosen modules, offering its `default`. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
 
 ## 3. Show the change list, then wait
 
@@ -43,10 +43,11 @@ List every file you will create or change, one line each saying what goes in, me
 
 **Rules** (`rules` in `module.json`):
 
-- A rule file without `paths:` frontmatter is merged into the target's main rule file under a `##` heading named after the module (`## Engineering`). The main rule file is AGENTS.md if it exists; else CLAUDE.md if it exists; else create AGENTS.md (and for Claude Code a CLAUDE.md containing `@AGENTS.md`).
+- A rule file without `paths:` frontmatter is merged into the target's main rule file under a `##` heading named after the module (`## Engineering`): the rule file's own `#` title is replaced by that heading and its `##` sections become `###`. The main rule file is AGENTS.md if it exists; else CLAUDE.md if it exists; else create AGENTS.md (and for Claude Code a CLAUDE.md containing `@AGENTS.md`).
+- When the main rule file is an index (a "Read in this order" or directory table, as in `template/AGENTS.md`), add a row for each rule file or directory you create.
 - A rule file with `paths:` frontmatter: **[CC]** write it to `.claude/rules/<module>.md`, keeping the frontmatter. Other agents: merge it into AGENTS.md under `## When editing <paths>`.
-- A rule file with `## Claude Code` and `## Other agents` sections: keep only the section that matches you.
-- Skip rules the target already has in substance, and conflicting rules the user chose not to take.
+- A rule file with `## Claude Code` and `## Other agents` sections: keep only the content of the section that matches you, without that section's heading.
+- Skip rules the target already has in substance, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
 - Replace every `{{PLACEHOLDER}}` with the user's answer. When an answer is empty, delete the line that held the placeholder.
 
 **Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`).
@@ -78,26 +79,28 @@ JSON at the target's root, committed with the target:
   "agent": "claude-code",
   "skills_scope": "project",
   "modules": {
-    "engineering": { "files": ["AGENTS.md#Engineering"] },
+    "template": { "files": ["AGENTS.md", "CLAUDE.md", "docs/superpowers/specs/"] },
+    "engineering": { "files": ["AGENTS.md#Engineering"], "skipped": ["KISS: kept the user's rule on early abstraction"] },
     "publish": { "files": [".claude/skills/doc-publish/", ".claude/skills/doc-fact-check/"] }
   }
 }
 ```
 
-`files` lists everything you created or changed for each module. A section merged into a file is written `path#Heading`. Insert no markers into rule files; the lock is the only record of where things came from.
+`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again. Insert no markers into rule files; the lock is the only record of where things came from.
 
 ## 6. Report
 
 - Created and changed files, per module.
 - Skipped items and why: already present, user declined, conflict kept, needs Claude Code.
 - Missing commands and how to install them.
+- When you set `core.hooksPath`: it lives in the local git config, so everyone who clones the target runs `git config core.hooksPath .githooks` once.
 - How to update later: hand this repository to the agent again.
 
 ## 7. Update
 
 1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> extras/<name> template`.
 2. Summarize the changes per module in plain words: rule added, rule removed, wording changed, placeholder added, file renamed.
-3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes.
+3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes. A rule listed in `skipped` is not offered again unless it changed upstream.
 4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections.
 5. Update `commit` and `adopted_at`, and `files` when they changed.
 6. Report as in section 6.
