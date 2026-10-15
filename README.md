@@ -89,7 +89,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 读 https://github.com/etherfunlab/workflow，按 ADOPT.md 接进我的项目。
 ```
 
-- **新项目**：agent 先把 `template/` 复制过去，里面有索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md 和 `docs/superpowers/`，然后问你要哪几个模块。
+- **新项目**：agent 问你要哪几个模块，列出改动清单，你点头后先把 `template/` 复制过去（里面有索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md 和 `docs/superpowers/`），再装模块。
 - **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块、规则用中文还是英文、skills 装在项目级还是用户级、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你已有的同义规则它会跳过，冲突的规则由你选。
 - **更新**：装完后你的仓里有一个 `.workflow.lock`，记着装了哪些模块、对应上游哪个 commit。把这个仓再交给 agent 一次，它会拿出上游从那个 commit 到最新的改动，按模块讲给你听，你点头再合。
 
@@ -195,7 +195,7 @@ Send your agent this:
 Read https://github.com/etherfunlab/workflow and wire it into my project by following ADOPT.md.
 ```
 
-- **New project**: the agent copies `template/` first (an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, and `docs/superpowers/`), then asks which modules you want.
+- **New project**: the agent asks which modules you want and lists every change; once you say yes it copies `template/` first (an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, and `docs/superpowers/`), then installs the modules.
 - **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules you want, whether rules should be in Chinese or English, whether skills go at project or user level, and which optional hooks to install. Before writing anything it lists every file it will change. Rules you already have are skipped; where a rule conflicts with yours, you choose.
 - **Update**: after installation your repo has a `.workflow.lock` recording the modules and the upstream commit. Hand this repo to your agent again; it collects the upstream changes since that commit, walks you through them module by module, and merges what you approve.
 

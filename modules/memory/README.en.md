@@ -4,7 +4,7 @@ From the principle: Repo management.
 
 ## What it is
 
-Mirrors the agent's memory into the repository. Claude Code keeps its auto-memory on your machine under `~/.claude/projects/<project>/memory/`; this module's two hooks sync it into `.memory/` in the repo, committed with everything else.
+Mirrors the agent's memory into the repository. Claude Code keeps its auto-memory on your machine under `~/.claude/projects/<project>/memory/`; this module's two hooks (one optional) sync it into `.memory/` in the repo, committed with everything else.
 
 ## Why
 

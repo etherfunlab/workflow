@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-把 agent 的记忆镜像进仓库。Claude Code 的 auto-memory 存在你本机的 `~/.claude/projects/<项目>/memory/`，这个模块用两个 hook 把它同步到仓里的 `.memory/`，随仓提交。
+把 agent 的记忆镜像进仓库。Claude Code 的 auto-memory 存在你本机的 `~/.claude/projects/<项目>/memory/`，这个模块用两个 hook（其中一个可选）把它同步到仓里的 `.memory/`，随仓提交。
 
 ## 为什么
 
