@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fixture-specific assertions for ADOPT dry runs.
 
-usage: check_adopt.py <target> --fixture {empty,existing,existing-pressure,update} [--expect-commit SHA]
+usage: check_adopt.py <target> --fixture {empty,existing,existing-pressure,update,collisions} [--expect-commit SHA]
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def read(p: Path) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
-    ap.add_argument("--fixture", required=True, choices=["empty", "existing", "existing-pressure", "update"])
+    ap.add_argument("--fixture", required=True, choices=["empty", "existing", "existing-pressure", "update", "collisions"])
     ap.add_argument("--expect-commit")
     a = ap.parse_args()
     t = Path(a.target)
@@ -71,6 +71,24 @@ def main() -> None:
             errs.append("rule added upstream is missing after update")
         if re.search(r"error rate", rules, re.I):
             errs.append("rule removed upstream is still present after update")
+
+    if a.fixture == "collisions":
+        import subprocess
+        if "Team doc review" not in read(t / ".claude/skills/doc-review/SKILL.md"):
+            errs.append("existing doc-review skill was overwritten")
+        hook = read(t / ".husky/pre-push").splitlines()
+        call = [i for i, l in enumerate(hook) if "memory-pre-push" in l]
+        stop = [i for i, l in enumerate(hook) if re.match(r"\s*(exit|exec)\b", l)]
+        if not call:
+            errs.append("active pre-push hook (.husky) does not call memory-pre-push")
+        elif stop and call[0] > stop[0]:
+            errs.append("memory-pre-push call sits after the hook's exit and never runs")
+        n = read(t / ".claude/settings.json").count("memory-mirror.sh")
+        if n != 1:
+            errs.append(f"memory-mirror hook registered {n} times (want 1)")
+        hp = subprocess.run(["git", "-C", str(t), "config", "core.hooksPath"], capture_output=True, text=True).stdout.strip()
+        if hp != ".husky":
+            errs.append(f"core.hooksPath changed to {hp!r}")
 
     for e in errs:
         print(e)

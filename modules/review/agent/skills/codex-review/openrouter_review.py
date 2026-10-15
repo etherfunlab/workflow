@@ -25,6 +25,11 @@ DEFAULT_MODEL = "openai/gpt-6-astra-pro"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 MAX_TRANSIENT_RETRIES = 2
 
+def redact(text: str, key: str) -> str:
+    """Remove the API key from text that may echo request headers."""
+    return text.replace(key, "[redacted]") if key else text
+
+
 SYSTEM = """You are a staff engineer doing a pre-merge review of a feature branch in a live product with real users. Your value is finding real defects, not restating the diff.
 
 Bias hard toward correctness bugs, wrong assumptions about systems outside the diff, concurrency and money-safety holes, and tests that pass for the wrong reason. Skip style, naming and formatting entirely.
@@ -74,16 +79,16 @@ def main() -> None:
                 print(f"HTTP {e.code}, retrying the same call ({attempt + 1}/{MAX_TRANSIENT_RETRIES})", file=sys.stderr)
                 time.sleep(10)
                 continue
-            sys.exit(f"HTTP {e.code}: {e.read().decode(errors='replace')[:500]}")
+            sys.exit(redact(f"HTTP {e.code}: {e.read().decode(errors='replace')[:500]}", key))
         except (socket.timeout, TimeoutError, urllib.error.URLError) as e:
             if attempt < MAX_TRANSIENT_RETRIES:
                 print(f"{type(e).__name__}, retrying the same call ({attempt + 1}/{MAX_TRANSIENT_RETRIES})", file=sys.stderr)
                 time.sleep(10)
                 continue
-            sys.exit(f"request failed: {e}")
+            sys.exit(redact(f"request failed: {e}", key))
 
     if not out or "choices" not in out:
-        sys.exit(f"no choices in response: {json.dumps(out)[:500]}")
+        sys.exit(redact(f"no choices in response: {json.dumps(out)[:500]}", key))
     text = out["choices"][0]["message"].get("content") or ""
     if not text.strip():
         sys.exit("empty review content")

@@ -33,6 +33,8 @@ def check_lock(repo: Path) -> list[str]:
     if not isinstance(mods, dict) or not mods:
         return errs + ["modules must be a non-empty object"]
     for name, m in mods.items():
+        if isinstance(m, dict) and "commit" in m and not re.fullmatch(r"[0-9a-f]{40}", str(m["commit"])):
+            errs.append(f"modules.{name}.commit must be a 40-char lowercase hex sha")
         files = m.get("files") if isinstance(m, dict) else None
         if not isinstance(files, list) or not files:
             errs.append(f"modules.{name}.files must be a non-empty list")

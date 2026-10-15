@@ -44,4 +44,32 @@ t_exit "pre-push with other staged work still stops" 1 bash -c "cd '$repo' && .g
 t_no_out "mirror commit leaves other staged files out" "staged\.txt" git -C "$repo" show --name-only --format= HEAD
 t_out "other staged file is still staged" "^A\s+staged\.txt" git -C "$repo" status --porcelain
 
+
+# two repos whose paths differ only in punctuation must not share a mirror
+repo2="$tmp/My_Repo 项目"; mkdir -p "$repo2/.githooks"; git -C "$repo2" init -q; cp "$hooks"/* "$repo2/.githooks/"
+enc2=$(printf '%s' "$repo2" | perl -CSD -pe 's/[^A-Za-z0-9_]/-/g'); mem2="$HOME/.claude/projects/$enc2/memory"; mkdir -p "$mem2"
+printf 'fact z\n' > "$mem2/z.md"
+printf '{"tool_input":{"file_path":"%s"}}' "$mem2/z.md" | CLAUDE_PROJECT_DIR="$repo2" "$repo2/.githooks/memory-mirror.sh"
+t_true "underscore repo syncs its own memory" test -f "$repo2/.memory/z.md"
+t_true "underscore repo does not get the other repo's memory" test ! -e "$repo2/.memory/a.md"
+printf 'fact e\n' > "$mem/e.md"; hook "$repo" "$mem/e.md"
+t_true "space repo still syncs its own memory" test -f "$repo/.memory/e.md"
+t_true "space repo does not get the underscore repo's memory" test ! -e "$repo/.memory/z.md"
+
+# a .memory symlink is never synced through
+repo3="$tmp/linked"; mkdir -p "$repo3" "$tmp/outside"; git -C "$repo3" init -q; printf 'keep\n' > "$tmp/outside/keep.txt"
+ln -s "$tmp/outside" "$repo3/.memory"
+enc3=$(printf '%s' "$repo3" | perl -CSD -pe 's/[^A-Za-z0-9_]/-/g'); mem3="$HOME/.claude/projects/$enc3/memory"; mkdir -p "$mem3"; printf 'm\n' > "$mem3/m.md"
+printf '{"tool_input":{"file_path":"%s"}}' "$mem3/m.md" | CLAUDE_PROJECT_DIR="$repo3" "$repo/.githooks/memory-mirror.sh" 2>/dev/null
+t_true "symlinked .memory: files outside are untouched" test -f "$tmp/outside/keep.txt"
+
+# a failed mirror commit does not block every push
+printf '#!/bin/sh\nexit 1\n' > "$repo/.git/hooks/pre-commit"; chmod +x "$repo/.git/hooks/pre-commit"
+git -C "$repo" commit -qm "wip" >/dev/null 2>&1 || true
+git -C "$repo" reset -q
+printf 'fact d\n' > "$mem/d.md"
+t_exit "failed mirror commit lets the push continue" 0 bash -c "cd '$repo' && .githooks/memory-pre-push.sh"
+t_out "failed mirror commit is reported" "could not commit" bash -c "cd '$repo' && .githooks/memory-pre-push.sh"
+rm -f "$repo/.git/hooks/pre-commit"
+
 t_done memory

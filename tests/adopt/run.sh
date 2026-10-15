@@ -23,6 +23,11 @@ t_out "missing file reported" "NOPE\.md does not exist" python3 "$cl" "$r"
 r=$tmp/head; mkrepo $r; lock $r "${good/AGENTS.md#Engineering/AGENTS.md#Writing}"
 t_out "missing heading reported" "heading 'Writing' not found" python3 "$cl" "$r"
 
+r=$tmp/modcommit; mkrepo $r; lock $r "${good/\"files\":/\"commit\":\"xyz\",\"files\":}"
+t_out "per-module commit is validated" "modules.engineering.commit must be" python3 "$cl" "$r"
+r=$tmp/modcommitok; mkrepo $r; lock $r "${good/\"files\":/\"commit\":\"$sha\",\"files\":}"
+t_exit "valid per-module commit passes" 0 python3 "$cl" "$r"
+
 d=$tmp/prep; "$root/tests/adopt/prepare.sh" existing "$d" >/dev/null
 t_true "prepare copies fixture" test -f "$d/docs/team-rules.md"
 t_out "prepare makes a clean repo" "^$" git -C "$d" status --porcelain
