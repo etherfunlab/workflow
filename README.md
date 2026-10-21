@@ -80,6 +80,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | [publish](modules/publish/README.zh.md) | 成稿收尾三道工序 | skills `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`，`precheck.sh` | 代码为王 |
 | template + [ADOPT](ADOPT.md) | 新项目骨架与接线流程 | `AGENTS.md`、`CLAUDE.md`、`docs/superpowers/`、`.workflow.lock` | 约束优先 |
 | 补充：[zh-hant-converter](extras/zh-hant-converter/README.zh.md) | 简繁转换，给深港团队用 | skill `zh-hant-converter` | — |
+| 补充：[ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | skill `ios-keyboard-page-shift` | — |
 
 ## 怎么用
 
@@ -186,6 +187,7 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 | [publish](modules/publish/README.en.md) | Three-stage finishing pipeline for docs | skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `precheck.sh` | Code is king |
 | template + [ADOPT](ADOPT.md) | New-project skeleton and the wiring procedure | `AGENTS.md`, `CLAUDE.md`, `docs/superpowers/`, `.workflow.lock` | Constraints first |
 | Supplement: [zh-hant-converter](extras/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese, for Shenzhen and Hong Kong teams | skill `zh-hant-converter` | — |
+| Supplement: [ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | skill `ios-keyboard-page-shift` | — |
 
 ## How to use
 
