@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is an index. Each rule lives in one place; this file says where, in reading order.
+This file starts with an index. Each rule lives in one place; the index says where, in reading order. Rules for the whole repo follow it as sections.
 
 ## Read in this order
 

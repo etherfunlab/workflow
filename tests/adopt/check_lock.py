@@ -7,7 +7,8 @@ import re
 import sys
 from pathlib import Path
 
-KEYS = ("upstream", "commit", "adopted_at", "language", "agent", "skills_scope", "modules")
+KEYS = ("upstream", "commit", "adopted_at", "language", "agent", "modules")
+SKILL_PATH = re.compile(r"(^|/)skills/")
 
 
 def check_lock(repo: Path) -> list[str]:
@@ -27,11 +28,12 @@ def check_lock(repo: Path) -> list[str]:
         errs.append("adopted_at must be YYYY-MM-DD")
     if lock["language"] not in ("zh", "en"):
         errs.append("language must be zh or en")
-    if lock["skills_scope"] not in ("project", "user"):
+    if "skills_scope" in lock and lock["skills_scope"] not in ("project", "user"):
         errs.append("skills_scope must be project or user")
     mods = lock["modules"]
     if not isinstance(mods, dict) or not mods:
         return errs + ["modules must be a non-empty object"]
+    has_skills = False
     for name, m in mods.items():
         if isinstance(m, dict) and "commit" in m and not re.fullmatch(r"[0-9a-f]{40}", str(m["commit"])):
             errs.append(f"modules.{name}.commit must be a 40-char lowercase hex sha")
@@ -41,12 +43,15 @@ def check_lock(repo: Path) -> list[str]:
             continue
         for entry in files:
             path, _, heading = str(entry).partition("#")
+            has_skills = has_skills or bool(SKILL_PATH.search(path))
             fp = Path(path).expanduser() if path.startswith("~") else repo / path
             if not fp.exists():
                 errs.append(f"modules.{name}: {path} does not exist")
                 continue
             if heading and not re.search(rf"^#+\s+{re.escape(heading)}\s*$", fp.read_text(encoding="utf-8"), re.M):
                 errs.append(f"modules.{name}: heading '{heading}' not found in {path}")
+    if has_skills and "skills_scope" not in lock:
+        errs.append("skills_scope missing while skills are installed")
     return errs
 
 

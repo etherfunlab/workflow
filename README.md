@@ -91,7 +91,8 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 ```
 
 - **新项目**：agent 问你要哪几个模块，列出改动清单，你点头后先把 `template/` 复制过去（里面有索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md 和 `docs/superpowers/`），再装模块。
-- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块、规则用中文还是英文、skills 装在项目级还是用户级、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你已有的同义规则它会跳过，冲突的规则由你选。
+- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块、规则用中文还是英文、skills 装在项目级还是用户级（有模块装 skill 时才问）、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你仓里已有的同义规则它会跳过，冲突的规则由你选。
+- **仓外的规则**：新项目和已有项目都一样，agent 会读你用户级和上层目录的规则文件。某条规则只在那里有的，它会问你跳过还是照装；跳过的话，别人 clone 这个仓，或者换一台机器、换一个 agent，那条规则就不在了。
 - **更新**：装完后你的仓里有一个 `.workflow.lock`，记着装了哪些模块、对应上游哪个 commit。把这个仓再交给 agent 一次，它会拿出上游从那个 commit 到最新的改动，按模块讲给你听，你点头再合。
 
 只有 Claude Code 才有的部分（hooks、`.claude/rules/` 路径规则）都单独标出来了。Codex 等其他 agent 会跳过 hooks，把路径规则写进 AGENTS.md。
@@ -198,7 +199,8 @@ Read https://github.com/etherfunlab/workflow and wire it into my project by foll
 ```
 
 - **New project**: the agent asks which modules you want and lists every change; once you say yes it copies `template/` first (an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, and `docs/superpowers/`), then installs the modules.
-- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules you want, whether rules should be in Chinese or English, whether skills go at project or user level, and which optional hooks to install. Before writing anything it lists every file it will change. Rules you already have are skipped; where a rule conflicts with yours, you choose.
+- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules you want, whether rules should be in Chinese or English, whether skills go at project or user level (asked only when a module installs skills), and which optional hooks to install. Before writing anything it lists every file it will change. Rules your repo already has are skipped; where a rule conflicts with yours, you choose.
+- **Rules outside the repo**: for new and existing projects alike, the agent reads your user-level and parent-directory rule files. When a rule exists only there, it asks whether to skip it or install it anyway; if you skip it, the rule is missing for anyone who clones the repo and on another machine or agent.
 - **Update**: after installation your repo has a `.workflow.lock` recording the modules and the upstream commit. Hand this repo to your agent again; it collects the upstream changes since that commit, walks you through them module by module, and merges what you approve.
 
 Parts that need Claude Code (hooks, `.claude/rules/` path rules) are marked. Codex and other agents skip the hooks and get path rules as sections in AGENTS.md.

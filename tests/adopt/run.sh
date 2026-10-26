@@ -28,6 +28,15 @@ t_out "per-module commit is validated" "modules.engineering.commit must be" pyth
 r=$tmp/modcommitok; mkrepo $r; lock $r "${good/\"files\":/\"commit\":\"$sha\",\"files\":}"
 t_exit "valid per-module commit passes" 0 python3 "$cl" "$r"
 
+noscope="${good/\"skills_scope\":\"project\",/}"
+r=$tmp/noscope; mkrepo $r; lock $r "$noscope"
+t_exit "skills_scope may be omitted when no skills are installed" 0 python3 "$cl" "$r"
+r=$tmp/skillnoscope; mkrepo $r; mkdir -p "$r/.claude/skills/s"
+lock $r "${noscope/\"AGENTS.md#Engineering\"/\"AGENTS.md#Engineering\",\".claude/skills/s/\"}"
+t_out "skills_scope required when skills are installed" "skills_scope missing" python3 "$cl" "$r"
+r=$tmp/badscope; mkrepo $r; lock $r "${good/\"project\"/\"team\"}"
+t_out "skills_scope value is validated" "skills_scope must be project or user" python3 "$cl" "$r"
+
 d=$tmp/prep; "$root/tests/adopt/prepare.sh" existing "$d" >/dev/null
 t_true "prepare copies fixture" test -f "$d/docs/team-rules.md"
 t_out "prepare makes a clean repo" "^$" git -C "$d" status --porcelain
