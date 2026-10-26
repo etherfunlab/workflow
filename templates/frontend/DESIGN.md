@@ -44,7 +44,7 @@ Hierarchy is carried by a capped set of surface levels and neutral shadows, not 
 | L2 | card | real objects: TODO (for example product cards, message bubbles, the composer) | TODO |
 | L3 | overlay | modals, sheets, popovers, menus | TODO |
 
-- No level above L3. An overlay is always one level above what it covers.
+- No level above L3. Every overlay is L3, whatever it covers; an overlay opened from another overlay is also L3 and stacks on top of it.
 - List rows are not cards. Conversation rows, settings rows and navigation rows are bare by default and take a surface only on hover or when active.
 - Blur (`backdrop-filter`) belongs on a surface that content passes under. On a surface nothing scrolls beneath, it costs GPU and shows nothing; use a solid fill.
 
@@ -103,9 +103,11 @@ Elements that belong on the same line (name and badge, price and button, overlay
 
 Readers see glyphs, not boxes. A pill with a background has its text one horizontal padding inside its box edge, so box-aligned pills read as indented. Pick one fix per surface: let the pill row bleed into the gutter by its padding (all pills in the column then need the same padding), or indent the bare text in the column by the same padding.
 
-### 6.3 Mixed sizes align on the visual center
+### 6.3 Text on one line aligns on the visual center
 
-When two font sizes share a line, baseline alignment makes the smaller text look low. Align them with `inline-flex` and `align-items: center`; `text-box: trim-both text` closes the last pixel. Use the `text` edge, not `cap alphabetic`, which clips CJK glyphs. Never fix it with `top: -1px`: the offset depends on font metrics and breaks with the next size or locale. Never enlarge the small text to align it; the size difference is hierarchy (`FONTS.md` §2).
+Two texts of equal rank on one row (a price and a button label) use the same size and line height, each centered in boxes of equal height, so their ink lines meet by construction.
+
+When a smaller mark (a count, a unit, a badge) shares a line with larger text, baseline alignment makes the mark look low. Align them with `inline-flex` and `align-items: center`. `text-box: trim-both text` trims the line box to the font's ascent and descent, which brings the box center close to the ink center; check it with the fonts you ship. Use the `text` edge, not `cap alphabetic`: CJK ink extends past the cap and alphabetic lines, so under `overflow: hidden` (truncation) the trimmed box cuts strokes off. Never fix it with `top: -1px`: the offset depends on font metrics and breaks with the next size or locale. Never enlarge the small text to align it; the size difference is hierarchy (`FONTS.md` §2).
 
 ### 6.4 Review criteria
 
@@ -113,8 +115,9 @@ When two font sizes share a line, baseline alignment makes the smaller text look
 2. A flow element carries `pr-N` / `pe-N` to make room for a corner element → red.
 3. Two boxes are offset with `h-N` + `pb-N` / `mb-N` to meet one center line → red.
 4. Pill and bare-text columns align on the box but not the ink → red.
-5. Paired text on one row differs in size or line height → red.
-6. A row that stands alone has unequal space above and below → red.
+5. Two texts of equal rank on one row differ in size or line height → red.
+6. Text of two sizes on one row aligns on the baseline, or is nudged into place with an offset → red.
+7. A row that stands alone has unequal space above and below → red.
 
 ## 7. Motion
 

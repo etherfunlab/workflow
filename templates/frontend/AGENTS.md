@@ -22,7 +22,7 @@ TODO: stack (framework, styling, i18n library) and the commands for dev, test, t
 
 ### Building
 
-- Import the subpath you use, not a third-party barrel. A namespace import cannot be tree-shaken, and the breakage often shows only in the production build. After upgrading the framework or a dependency, run a real production build and load TODO: the key pages.
+- Import from the subpath you use, not from a third-party package's barrel entry. Whether a barrel tree-shakes depends on the package (side-effect flags, how it re-exports) and on how you use it; when it does not, the whole barrel ships, including dependencies that may break only in the production build. After upgrading the framework or a dependency, run a real production build and load TODO: the key pages.
 - Decide whether you are in production by the runtime hostname, not by build-time environment variables: a preview deployment can be promoted to the production domain with the old values baked in.
 
 ### Verifying

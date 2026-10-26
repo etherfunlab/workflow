@@ -41,11 +41,10 @@ List every file you will create or change, one line each saying what goes in, me
 
 ## 4. Apply
 
-**Templates** go first, `base` (new project only) before the others. Copy each file of `templates/<name>/` to the same path in the target, written in the chosen language:
+**Templates** go first, `base` (new project only) before the others. Install each file of `templates/<name>/` except `README.*.md` at the same path in the target, written in the chosen language:
 
-- A file the target does not have is copied.
-- The template's AGENTS.md merges into the target's main rule file (defined under Rules below): rows join the table under the same `##` heading, numbered after the rows already there; every other `##` section is appended unless the target already has a section with that heading.
-- Any other file the target already has is skipped and named in the report.
+- The AGENTS.md of a template other than `base` is never copied as a file. It merges into the target's main rule file (defined under Rules below): its rows join the table under the same `##` heading, numbered after the rows already there, and when that file has no such table, add the heading and the table. Its other `##` sections are appended; when that file already has a section with the same heading, merge into it as for module rules: skip what it already says in substance, and ask on a conflict.
+- Every other file is copied when the target lacks it. A file the target already has is skipped and named in the report.
 - `TODO:` marks a blank the team fills later. Keep each one as it is.
 
 **Rules** (`rules` in `module.json`):
@@ -114,7 +113,7 @@ JSON at the target's root, committed with the target:
 
 ## 7. Update
 
-1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> skills/<name>`, and for each `templates/<name>` key the same command on that path, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`. A key named `template` is `templates/base` under its earlier name: diff `template templates/base` and rename the key.
+1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> skills/<name>`, and for each `templates/<name>` key the same command on that path, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`. Paths renamed upstream are diffed under both names, so removals show up too: `template` and `templates/base` for the lock key `template` (rename that key to `templates/base`), and `extras/<name>` and `skills/<name>` for a supplementary skill.
 2. Summarize the changes per module in plain words: rule added, rule removed, wording changed, placeholder added, file renamed.
 3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes. A rule listed in `skipped` is not offered again unless it changed upstream.
 4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections, filled `TODO:` blanks included.

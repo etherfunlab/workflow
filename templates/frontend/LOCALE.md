@@ -27,7 +27,7 @@ TODO: the locales, the default locale and the URL strategy (for example a prefix
 - TODO: file layout (for example one JSON file per surface: `i18n/locales/<lang>/<surface>.json`).
 - Key names follow `surface.component.element`. TODO: casing per segment.
 - Name a key by what the user sees, not by how it is implemented: `error.reply_failed`, not `error.http_500`.
-- TODO: syntax traps of your i18n library. For example, vue-i18n compiles messages at runtime: a literal `@` must be written `{'@'}`, and a syntax error only logs in development but blanks the whole component subtree in production.
+- TODO: syntax traps of your i18n library, and how a broken message fails in development and in a production build; pin that behavior with a test. For example, in vue-i18n message syntax a literal `@` starts a linked message and must be written `{'@'}`; depending on the build setup, a syntax error may only log in development yet blank a component in production.
 
 ## 3. Tone
 
