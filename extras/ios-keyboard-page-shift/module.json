@@ -1,0 +1,16 @@
+{
+  "name": "ios-keyboard-page-shift",
+  "principles": [],
+  "role": "extra",
+  "depends_on": [],
+  "rules": [],
+  "skills": [
+    "ios-keyboard-page-shift"
+  ],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": [],
+  "upstream_skills": [],
+  "placeholders": {},
+  "copies": []
+}
