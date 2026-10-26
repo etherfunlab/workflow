@@ -1,7 +1,7 @@
 // node --test: the reference implementation shipped with the ios-keyboard-page-shift skill.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { installKeyboardScrollRestore } from '../../extras/ios-keyboard-page-shift/agent/skills/ios-keyboard-page-shift/keyboard-scroll-restore.js'
+import { installKeyboardScrollRestore } from '../../skills/ios-keyboard-page-shift/agent/skills/ios-keyboard-page-shift/keyboard-scroll-restore.js'
 
 const VIEW = 800
 const KEYBOARD = 340

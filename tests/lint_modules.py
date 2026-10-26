@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lint modules/*/module.json and extras/*/module.json against the repo layout."""
+"""Lint modules/*/module.json and skills/*/module.json against the repo layout."""
 from __future__ import annotations
 
 import argparse
@@ -28,7 +28,7 @@ def frontmatter(p: Path) -> dict[str, str]:
 
 def lint(root: Path, require_docs: bool) -> list[str]:
     errs: list[str] = []
-    manifests = sorted(root.glob("modules/*/module.json")) + sorted(root.glob("extras/*/module.json"))
+    manifests = sorted(root.glob("modules/*/module.json")) + sorted(root.glob("skills/*/module.json"))
     data: dict[Path, dict] = {}
     for mj in manifests:
         try:
@@ -46,9 +46,9 @@ def lint(root: Path, require_docs: bool) -> list[str]:
             errs.append(f"{rel}: name {m['name']!r} != directory {d.name!r}")
         if m["role"] not in ROLES:
             errs.append(f"{rel}: role {m['role']!r} not in {sorted(ROLES)}")
-        if d.parent.name == "extras":
+        if d.parent.name == "skills":
             if m["principles"] != [] or m["role"] != "extra":
-                errs.append(f"{rel}: extras have principles [] and role 'extra'")
+                errs.append(f"{rel}: supplementary skills have principles [] and role 'extra'")
         elif not m["principles"] or not set(m["principles"]) <= ALLOWED_PRINCIPLES:
             errs.append(f"{rel}: principles must be a non-empty subset of {sorted(ALLOWED_PRINCIPLES)}")
         for dep in m["depends_on"]:

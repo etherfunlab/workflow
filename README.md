@@ -78,9 +78,25 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | [memory](modules/memory/README.zh.md) | 记忆镜像进仓 | AGENTS.md 一节、`.memory/README.md`、`.githooks/`；同步 hook（仅 Claude Code） | 仓库管理 |
 | [review](modules/review/README.zh.md) | 换一个模型家族审代码 | skill `codex-review` | CLI 互调 |
 | [publish](modules/publish/README.zh.md) | 成稿收尾三道工序 | skills `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`，`precheck.sh` | 代码为王 |
-| template + [ADOPT](ADOPT.md) | 新项目骨架与接线流程 | `AGENTS.md`、`CLAUDE.md`、`docs/superpowers/`、`.workflow.lock` | 约束优先 |
-| 补充：[zh-hant-converter](extras/zh-hant-converter/README.zh.md) | 简繁转换，给深港团队用 | skill `zh-hant-converter` | — |
-| 补充：[ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | skill `ios-keyboard-page-shift` | — |
+| [仓库模板](#仓库模板) + [ADOPT](ADOPT.md) | 项目骨架与接线流程 | 见下一节，外加 `.workflow.lock` | 约束优先 |
+
+## 仓库模板
+
+新项目一律先铺 `base`，再按项目类型叠一层。已有项目也可以只叠后者。
+
+| 模板 | 给谁 | 装进你仓里的 | 出自心法 |
+|---|---|---|---|
+| `base` | 所有新项目 | 索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md、`docs/superpowers/` | 约束优先 |
+| [frontend](templates/frontend/README.zh.md) | 前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`，AGENTS.md 并进一节 | 约束优先、权威唯一 |
+
+## 补充 skills
+
+不出自心法，是 EtherFun Lab 做项目时自己攒下的 skill，放在 [`skills/`](skills/)。接线时 agent 把它们和模块分开列，要哪个装哪个。
+
+| skill | 解决什么 | 给谁 |
+|---|---|---|
+| [zh-hant-converter](skills/zh-hant-converter/README.zh.md) | 简繁转换：对内只转字形，对外连词汇一起换 | 深港团队 |
+| [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | 做移动端网页的团队 |
 
 ## 怎么用
 
@@ -90,8 +106,8 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 读 https://github.com/etherfunlab/workflow，按 ADOPT.md 接进我的项目。
 ```
 
-- **新项目**：agent 问你要哪几个模块，列出改动清单，你点头后先把 `template/` 复制过去（里面有索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md 和 `docs/superpowers/`），再装模块。
-- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块、规则用中文还是英文、skills 装在项目级还是用户级（有模块装 skill 时才问）、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你仓里已有的同义规则它会跳过，冲突的规则由你选。
+- **新项目**：agent 问你要哪几个模块和模板，列出改动清单，你点头后先铺 `templates/base/`，叠上你选的模板，再装模块。
+- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块和模板、规则用中文还是英文、skills 装在项目级还是用户级（有模块装 skill 时才问）、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你仓里已有的同义规则它会跳过，冲突的规则由你选。
 - **仓外的规则**：新项目和已有项目都一样，agent 会读你用户级和上层目录的规则文件。某条规则只在那里有的，它会问你跳过还是照装；跳过的话，别人 clone 这个仓，或者换一台机器、换一个 agent，那条规则就不在了。
 - **更新**：装完后你的仓里有一个 `.workflow.lock`，记着装了哪些模块、对应上游哪个 commit。把这个仓再交给 agent 一次，它会拿出上游从那个 commit 到最新的改动，按模块讲给你听，你点头再合。
 
@@ -186,9 +202,25 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 | [memory](modules/memory/README.en.md) | Agent memory mirrored into the repo | a section in AGENTS.md, `.memory/README.md`, `.githooks/`; sync hook (Claude Code only) | Repo management |
 | [review](modules/review/README.en.md) | Code review by a second model family | skill `codex-review` | CLIs call CLIs |
 | [publish](modules/publish/README.en.md) | Three-stage finishing pipeline for docs | skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `precheck.sh` | Code is king |
-| template + [ADOPT](ADOPT.md) | New-project skeleton and the wiring procedure | `AGENTS.md`, `CLAUDE.md`, `docs/superpowers/`, `.workflow.lock` | Constraints first |
-| Supplement: [zh-hant-converter](extras/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese, for Shenzhen and Hong Kong teams | skill `zh-hant-converter` | — |
-| Supplement: [ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | skill `ios-keyboard-page-shift` | — |
+| [Repo templates](#repo-templates) + [ADOPT](ADOPT.md) | Project skeletons and the wiring procedure | see the next section, plus `.workflow.lock` | Constraints first |
+
+## Repo templates
+
+A new project always starts from `base`, with one template for its kind of project layered on top. An existing project can take just the layer.
+
+| Template | For | What lands in your repo | From the principle |
+|---|---|---|---|
+| `base` | every new project | an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, `docs/superpowers/` | Constraints first |
+| [frontend](templates/frontend/README.en.md) | frontend projects | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, and a section merged into AGENTS.md | Constraints first, One source of truth |
+
+## Supplementary skills
+
+These come from no principle: they are skills EtherFun Lab built for its own projects, kept in [`skills/`](skills/). When wiring, the agent lists them apart from the modules, and you install the ones you want.
+
+| Skill | What it solves | For |
+|---|---|---|
+| [zh-hant-converter](skills/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese: glyphs only for internal docs, vocabulary too for product pages | teams across Shenzhen and Hong Kong |
+| [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | teams building mobile web pages |
 
 ## How to use
 
@@ -198,8 +230,8 @@ Send your agent this:
 Read https://github.com/etherfunlab/workflow and wire it into my project by following ADOPT.md.
 ```
 
-- **New project**: the agent asks which modules you want and lists every change; once you say yes it copies `template/` first (an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, and `docs/superpowers/`), then installs the modules.
-- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules you want, whether rules should be in Chinese or English, whether skills go at project or user level (asked only when a module installs skills), and which optional hooks to install. Before writing anything it lists every file it will change. Rules your repo already has are skipped; where a rule conflicts with yours, you choose.
+- **New project**: the agent asks which modules and templates you want and lists every change; once you say yes it lays down `templates/base/`, layers the template you chose on top, then installs the modules.
+- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules and templates you want, whether rules should be in Chinese or English, whether skills go at project or user level (asked only when a module installs skills), and which optional hooks to install. Before writing anything it lists every file it will change. Rules your repo already has are skipped; where a rule conflicts with yours, you choose.
 - **Rules outside the repo**: for new and existing projects alike, the agent reads your user-level and parent-directory rule files. When a rule exists only there, it asks whether to skip it or install it anyway; if you skip it, the rule is missing for anyone who clones the repo and on another machine or agent.
 - **Update**: after installation your repo has a `.workflow.lock` recording the modules and the upstream commit. Hand this repo to your agent again; it collects the upstream changes since that commit, walks you through them module by module, and merges what you approve.
 
