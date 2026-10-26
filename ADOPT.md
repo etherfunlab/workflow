@@ -23,16 +23,17 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
    - it has no CLAUDE.md, AGENTS.md or `.claude/` → **new project**;
    - otherwise → **existing project**. Read in full: CLAUDE.md, AGENTS.md, every file they import with `@`, every `.claude/rules/*.md`, `.claude/settings.json`, `.claude/settings.local.json`, and the git hook setup (`git config core.hooksPath`, `.git/hooks/pre-push`, `.githooks/`).
 4. Read the rule files your agent loads from outside the target, for a new project too: the user-level file (Claude Code: `~/.claude/CLAUDE.md`; Codex: `~/.codex/AGENTS.md`) and, for Claude Code, every CLAUDE.md in the target's parent directories, with the files they import. These files do not travel with the repository; section 3 decides what happens to rules found there.
-5. Read every `modules/*/module.json` and `skills/*/module.json` here.
+5. Read every `modules/*/module.json` and `skills/*/module.json` here, and the "What it is" section of each `templates/*/README.en.md`.
 
 ## 2. Ask
 
 1. **Modules.** Show a table: name, one line on what it does, the principles it comes from, **[CC]** when it needs Claude Code. When a chosen module has `depends_on`, add those modules and say so. List `skills/` separately as supplementary skills.
-2. **Language** of rule text: Chinese or English.
-3. **Skill location**, only when a chosen module installs skills: project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
-4. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
+2. **Templates.** List each `templates/*/` other than `base`, one line each, and ask which to add. A new project always gets `base`; an existing project gets only the templates chosen here.
+3. **Language** of rule text and template files: Chinese or English.
+4. **Skill location**, only when a chosen module installs skills: project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
+5. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
 
-Then ask for each `placeholders` key of the chosen modules, offering its `default`; `<skills-dir>` in a default means the skill location chosen in question 3. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
+Then ask for each `placeholders` key of the chosen modules, offering its `default`; `<skills-dir>` in a default means the skill location chosen in question 4. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
 
 ## 3. Show the change list, then wait
 
@@ -40,12 +41,17 @@ List every file you will create or change, one line each saying what goes in, me
 
 ## 4. Apply
 
-**New project:** copy `template/` into the target first, skipping files that exist, then continue.
+**Templates** go first, `base` (new project only) before the others. Copy each file of `templates/<name>/` to the same path in the target, written in the chosen language:
+
+- A file the target does not have is copied.
+- The template's AGENTS.md merges into the target's main rule file (defined under Rules below): rows join the table under the same `##` heading, numbered after the rows already there; every other `##` section is appended unless the target already has a section with that heading.
+- Any other file the target already has is skipped and named in the report.
+- `TODO:` marks a blank the team fills later. Keep each one as it is.
 
 **Rules** (`rules` in `module.json`):
 
 - A rule file without `paths:` frontmatter is merged into the target's main rule file under a `##` heading named after the module (`## Engineering`): the rule file's own `#` title is replaced by that heading and its `##` sections become `###`. The main rule file is AGENTS.md if it exists; else CLAUDE.md if it exists; else create AGENTS.md (and for Claude Code a CLAUDE.md containing `@AGENTS.md`).
-- When the main rule file is an index (a "Read in this order" or directory table, as in `template/AGENTS.md`), add a row for each rule file or directory you create.
+- When the main rule file is an index (a "Read in this order" or directory table, as in `templates/base/AGENTS.md`), add a row for each rule file or directory you create.
 - **[CC]** Claude Code loads CLAUDE.md, not AGENTS.md. Whenever rules go into AGENTS.md and CLAUDE.md does not already import it, add the line `@AGENTS.md` to CLAUDE.md (creating CLAUDE.md if needed) and include that in the change list.
 - A rule file with `paths:` frontmatter: **[CC]** write it to `.claude/rules/<module>.md`, keeping the frontmatter. Other agents: merge it into AGENTS.md under `## When editing <paths>`.
 - A rule file with `## Claude Code` and `## Other agents` sections: keep only the content of the section that matches you, without that section's heading.
@@ -87,28 +93,30 @@ JSON at the target's root, committed with the target:
   "agent": "claude-code",
   "skills_scope": "project",
   "modules": {
-    "template": { "files": ["AGENTS.md", "CLAUDE.md", "docs/superpowers/specs/"] },
+    "templates/base": { "files": ["AGENTS.md", "CLAUDE.md", "docs/superpowers/specs/"] },
+    "templates/frontend": { "files": ["DESIGN.md", "LOCALE.md", "AGENTS.md#Frontend"] },
     "engineering": { "files": ["AGENTS.md#Engineering"], "skipped": ["KISS: kept the user's rule on early abstraction"] },
     "publish": { "files": [".claude/skills/doc-publish/", ".claude/skills/doc-fact-check/"] }
   }
 }
 ```
 
-`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again; a rule left to a file outside the target names that file. Write `skills_scope` only when a chosen module installs skills. A module's own `commit` (optional) overrides the top-level one; section 7 sets it when the user declines that module's upstream changes. Insert no markers into rule files; the lock is the only record of where things came from.
+`files` lists everything you created or changed for each module; files from `templates/<name>/` go under `"templates/<name>"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again; a rule left to a file outside the target names that file. Write `skills_scope` only when a chosen module installs skills. A module's own `commit` (optional) overrides the top-level one; section 7 sets it when the user declines that module's upstream changes. Insert no markers into rule files; the lock is the only record of where things came from.
 
 ## 6. Report
 
 - Created and changed files, per module.
 - Skipped items and why: already present, left to a file outside the target (name it), user declined, conflict kept, needs Claude Code.
+- The `TODO:` blanks in template files, counted per file.
 - Missing commands and how to install them.
 - When you set `core.hooksPath`: it lives in the local git config, so everyone who clones the target runs `git config core.hooksPath .githooks` once.
 - How to update later: hand this repository to the agent again.
 
 ## 7. Update
 
-1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> skills/<name> template`, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`.
+1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> skills/<name>`, and for each `templates/<name>` key the same command on that path, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`. A key named `template` is `templates/base` under its earlier name: diff `template templates/base` and rename the key.
 2. Summarize the changes per module in plain words: rule added, rule removed, wording changed, placeholder added, file renamed.
 3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes. A rule listed in `skipped` is not offered again unless it changed upstream.
-4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections.
+4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections, filled `TODO:` blanks included.
 5. Set the top-level `commit` to upstream HEAD and update `adopted_at`, and `files` when they changed. For each module whose changes the user declined, set its own `commit` to the commit it was last updated from, so the next update offers those changes again; remove a module's own `commit` once its changes are applied.
 6. Report as in section 6.
