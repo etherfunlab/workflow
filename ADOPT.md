@@ -22,20 +22,21 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
    - it has `.workflow.lock` → **update**, go to section 7;
    - it has no CLAUDE.md, AGENTS.md or `.claude/` → **new project**;
    - otherwise → **existing project**. Read in full: CLAUDE.md, AGENTS.md, every file they import with `@`, every `.claude/rules/*.md`, `.claude/settings.json`, `.claude/settings.local.json`, and the git hook setup (`git config core.hooksPath`, `.git/hooks/pre-push`, `.githooks/`).
-4. Read every `modules/*/module.json` and `extras/*/module.json` here.
+4. Read the rule files your agent loads from outside the target, for a new project too: the user-level file (Claude Code: `~/.claude/CLAUDE.md`; Codex: `~/.codex/AGENTS.md`) and, for Claude Code, every CLAUDE.md in the target's parent directories, with the files they import. These files do not travel with the repository; section 3 decides what happens to rules found there.
+5. Read every `modules/*/module.json` and `extras/*/module.json` here.
 
 ## 2. Ask
 
 1. **Modules.** Show a table: name, one line on what it does, the principles it comes from, **[CC]** when it needs Claude Code. When a chosen module has `depends_on`, add those modules and say so. List `extras/` separately as supplements.
 2. **Language** of rule text: Chinese or English.
-3. **Skill location:** project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
+3. **Skill location**, only when a chosen module installs skills: project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
 4. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
 
 Then ask for each `placeholders` key of the chosen modules, offering its `default`; `<skills-dir>` in a default means the skill location chosen in question 3. When an answer names a path that does not exist in the target, say so in the change list. Check each `requires` command with `command -v`; report missing ones with an install hint and do not install them yourself.
 
 ## 3. Show the change list, then wait
 
-List every file you will create or change, one line each saying what goes in, merges into existing files included. For each module rule that conflicts with an existing rule, quote both and ask which to keep. For each module rule the target already has in substance (anywhere, including `@`-imported files), say you will skip it. Write nothing until the user says yes.
+List every file you will create or change, one line each saying what goes in, merges into existing files included. For each module rule that conflicts with an existing rule, quote both and ask which to keep. For each module rule the target already has in substance (anywhere in the target, including `@`-imported files), say you will skip it. For each module rule found only in a file outside the target (section 1, step 4), quote that file's rule and ask whether to skip the module rule or install it anyway: a teammate, another machine or another agent does not load that file. Write nothing until the user says yes.
 
 ## 4. Apply
 
@@ -48,7 +49,7 @@ List every file you will create or change, one line each saying what goes in, me
 - **[CC]** Claude Code loads CLAUDE.md, not AGENTS.md. Whenever rules go into AGENTS.md and CLAUDE.md does not already import it, add the line `@AGENTS.md` to CLAUDE.md (creating CLAUDE.md if needed) and include that in the change list.
 - A rule file with `paths:` frontmatter: **[CC]** write it to `.claude/rules/<module>.md`, keeping the frontmatter. Other agents: merge it into AGENTS.md under `## When editing <paths>`.
 - A rule file with `## Claude Code` and `## Other agents` sections: keep only the content of the section that matches you, without that section's heading.
-- Skip rules the target already has in substance, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
+- Skip rules the target already has in substance, rules the user chose to leave to a file outside the target, and conflicting rules the user chose not to take. The unit is one bullet or one numbered item; when you skip one, name in the report any part of it that did not conflict.
 - Replace every `{{PLACEHOLDER}}` with the user's answer. When an answer is empty and the placeholder is all its line or list item holds, delete that line; when it sits inside a longer line, replace it with nothing.
 
 **Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`). When a skill with the same name already exists there and differs, show the difference and ask whether to replace it, keep the existing one, or skip; never overwrite it silently.
@@ -93,12 +94,12 @@ JSON at the target's root, committed with the target:
 }
 ```
 
-`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again. A module's own `commit` (optional) overrides the top-level one; section 7 sets it when the user declines that module's upstream changes. Insert no markers into rule files; the lock is the only record of where things came from.
+`files` lists everything you created or changed for each module; files copied from `template/` go under `"template"`. A section merged into a file is written `path#Heading`. `skipped` (optional) names each rule you left out and why, so an update does not offer it again; a rule left to a file outside the target names that file. Write `skills_scope` only when a chosen module installs skills. A module's own `commit` (optional) overrides the top-level one; section 7 sets it when the user declines that module's upstream changes. Insert no markers into rule files; the lock is the only record of where things came from.
 
 ## 6. Report
 
 - Created and changed files, per module.
-- Skipped items and why: already present, user declined, conflict kept, needs Claude Code.
+- Skipped items and why: already present, left to a file outside the target (name it), user declined, conflict kept, needs Claude Code.
 - Missing commands and how to install them.
 - When you set `core.hooksPath`: it lives in the local git config, so everyone who clones the target runs `git config core.hooksPath .githooks` once.
 - How to update later: hand this repository to the agent again.
