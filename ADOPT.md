@@ -43,7 +43,7 @@ List every file you will create or change, one line each saying what goes in, me
 
 **Templates** go first, `base` (new project only) before the others. Install each file of `templates/<name>/` except `README.*.md` at the same path in the target, written in the chosen language:
 
-- The AGENTS.md of a template other than `base` is never copied as a file. It merges into the target's main rule file (defined under Rules below): its rows join the table under the same `##` heading, numbered after the rows already there, and when that file has no such table, add the heading and the table. Its other `##` sections are appended; when that file already has a section with the same heading, merge into it as for module rules: skip what it already says in substance, and ask on a conflict.
+- The AGENTS.md of a template other than `base` is never copied as a file. It merges into the target's main rule file (defined under Rules below): its rows join the table under the same `##` heading, numbered after the rows already there; when that file has no such table, add the table under that heading, creating the heading only when it is missing. Its other `##` sections are appended; when that file already has a section with the same heading, merge into it as for module rules: skip what it already says in substance, and ask on a conflict.
 - Every other file is copied when the target lacks it. A file the target already has is skipped and named in the report.
 - `TODO:` marks a blank the team fills later. Keep each one as it is.
 
