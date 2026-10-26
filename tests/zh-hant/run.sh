@@ -3,7 +3,7 @@ set -uo pipefail
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 . "$root/tests/lib.sh"
 c="$root/tests/zh-hant/cases"
-skill="$root/extras/zh-hant-converter/agent/skills/zh-hant-converter/SKILL.md"
+skill="$root/skills/zh-hant-converter/agent/skills/zh-hant-converter/SKILL.md"
 t_out "skill names the internal command" 'opencc -c s2hk' cat "$skill"
 t_out "skill has both modes" '(?s)Internal.*External' cat "$skill"
 if command -v opencc >/dev/null 2>&1; then

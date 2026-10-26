@@ -79,8 +79,15 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | [review](modules/review/README.zh.md) | 换一个模型家族审代码 | skill `codex-review` | CLI 互调 |
 | [publish](modules/publish/README.zh.md) | 成稿收尾三道工序 | skills `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`，`precheck.sh` | 代码为王 |
 | template + [ADOPT](ADOPT.md) | 新项目骨架与接线流程 | `AGENTS.md`、`CLAUDE.md`、`docs/superpowers/`、`.workflow.lock` | 约束优先 |
-| 补充：[zh-hant-converter](extras/zh-hant-converter/README.zh.md) | 简繁转换，给深港团队用 | skill `zh-hant-converter` | — |
-| 补充：[ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | skill `ios-keyboard-page-shift` | — |
+
+## 补充 skills
+
+不出自心法，是 EtherFun Lab 做项目时自己攒下的 skill，放在 [`skills/`](skills/)。接线时 agent 把它们和模块分开列，要哪个装哪个。
+
+| skill | 解决什么 | 给谁 |
+|---|---|---|
+| [zh-hant-converter](skills/zh-hant-converter/README.zh.md) | 简繁转换：对内只转字形，对外连词汇一起换 | 深港团队 |
+| [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | 做移动端网页的团队 |
 
 ## 怎么用
 
@@ -187,8 +194,15 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 | [review](modules/review/README.en.md) | Code review by a second model family | skill `codex-review` | CLIs call CLIs |
 | [publish](modules/publish/README.en.md) | Three-stage finishing pipeline for docs | skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `precheck.sh` | Code is king |
 | template + [ADOPT](ADOPT.md) | New-project skeleton and the wiring procedure | `AGENTS.md`, `CLAUDE.md`, `docs/superpowers/`, `.workflow.lock` | Constraints first |
-| Supplement: [zh-hant-converter](extras/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese, for Shenzhen and Hong Kong teams | skill `zh-hant-converter` | — |
-| Supplement: [ios-keyboard-page-shift](extras/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | skill `ios-keyboard-page-shift` | — |
+
+## Supplementary skills
+
+These come from no principle: they are skills EtherFun Lab built for its own projects, kept in [`skills/`](skills/). When wiring, the agent lists them apart from the modules, and you install the ones you want.
+
+| Skill | What it solves | For |
+|---|---|---|
+| [zh-hant-converter](skills/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese: glyphs only for internal docs, vocabulary too for product pages | teams across Shenzhen and Hong Kong |
+| [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | teams building mobile web pages |
 
 ## How to use
 

@@ -6,7 +6,7 @@ Follow [ADOPT.md](ADOPT.md) to wire it into their project. Do not copy this file
 
 ## If you are maintaining this repo
 
-- Every module under `modules/` comes from one or more principles in README.md. `module.json` lists them by number (see ADOPT.md § Principles) and both READMEs name them in their first paragraph. Supplements that come from no principle live under `extras/` with `"principles": []`.
+- Every module under `modules/` comes from one or more principles in README.md. `module.json` lists them by number (see ADOPT.md § Principles) and both READMEs name them in their first paragraph. Skills of our own that come from no principle live under `skills/` with `"principles": []`.
 - `README.zh.md` and `README.en.md` change together and keep the same `##` sections.
 - `ADOPT.md`, this file, `module.json`, and everything under `agent/`, `template/` and `tests/` are English, except trigger phrases and quoted example words.
 - No product names, private repository names, internal URLs, local absolute paths or personal emails anywhere in this repo, commit messages included.

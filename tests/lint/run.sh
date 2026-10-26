@@ -22,8 +22,8 @@ t_out "unknown dependency reported" "depends_on unknown module 'nope'" python3 "
 t_out "missing file reported" "listed file missing: agent/rules/missing.md" python3 "$lint" --root "$r2"
 t_out "undeclared placeholder reported" "undeclared placeholders \['Y'\]" python3 "$lint" --root "$r2"
 
-r3="$tmp/r3"; mk "$r3" extras/zh '{"name":"zh","principles":[3],"role":"extra","depends_on":[],"rules":[],"skills":[],"hooks":[],"git_hooks":[],"requires":[],"upstream_skills":[],"placeholders":{}}'
-t_out "extras must have no principles" "extras have principles \[\]" python3 "$lint" --root "$r3"
+r3="$tmp/r3"; mk "$r3" skills/zh '{"name":"zh","principles":[3],"role":"extra","depends_on":[],"rules":[],"skills":[],"hooks":[],"git_hooks":[],"requires":[],"upstream_skills":[],"placeholders":{}}'
+t_out "supplementary skills must have no principles" "supplementary skills have principles \[\]" python3 "$lint" --root "$r3"
 
 r4="$tmp/r4"; mk "$r4" modules/good "$ok"; printf 'use {{X}}\n' > "$r4/modules/good/agent/rules/r.md"
 printf '# a\n## x\n## y\n' > "$r4/modules/good/README.zh.md"; printf '# a\n## x\n' > "$r4/modules/good/README.en.md"

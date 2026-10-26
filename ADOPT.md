@@ -12,7 +12,7 @@ You are an AI agent. The user handed you this repository and asked you to wire i
 
 ## Principles
 
-Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code is king, 4 Repo management, 5 Weak? Practice., 6 One source of truth, 7 CLIs call CLIs, 8 Watch the interfaces, 10 Issues between repos. (1 Active noise reduction and 9 Talk first, then run are for people and never become rules.) `extras/` come from no principle.
+Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code is king, 4 Repo management, 5 Weak? Practice., 6 One source of truth, 7 CLIs call CLIs, 8 Watch the interfaces, 10 Issues between repos. (1 Active noise reduction and 9 Talk first, then run are for people and never become rules.) Supplementary skills under `skills/` come from no principle.
 
 ## 1. Read before you ask
 
@@ -23,11 +23,11 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
    - it has no CLAUDE.md, AGENTS.md or `.claude/` → **new project**;
    - otherwise → **existing project**. Read in full: CLAUDE.md, AGENTS.md, every file they import with `@`, every `.claude/rules/*.md`, `.claude/settings.json`, `.claude/settings.local.json`, and the git hook setup (`git config core.hooksPath`, `.git/hooks/pre-push`, `.githooks/`).
 4. Read the rule files your agent loads from outside the target, for a new project too: the user-level file (Claude Code: `~/.claude/CLAUDE.md`; Codex: `~/.codex/AGENTS.md`) and, for Claude Code, every CLAUDE.md in the target's parent directories, with the files they import. These files do not travel with the repository; section 3 decides what happens to rules found there.
-5. Read every `modules/*/module.json` and `extras/*/module.json` here.
+5. Read every `modules/*/module.json` and `skills/*/module.json` here.
 
 ## 2. Ask
 
-1. **Modules.** Show a table: name, one line on what it does, the principles it comes from, **[CC]** when it needs Claude Code. When a chosen module has `depends_on`, add those modules and say so. List `extras/` separately as supplements.
+1. **Modules.** Show a table: name, one line on what it does, the principles it comes from, **[CC]** when it needs Claude Code. When a chosen module has `depends_on`, add those modules and say so. List `skills/` separately as supplementary skills.
 2. **Language** of rule text: Chinese or English.
 3. **Skill location**, only when a chosen module installs skills: project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
 4. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.
@@ -106,7 +106,7 @@ JSON at the target's root, committed with the target:
 
 ## 7. Update
 
-1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> extras/<name> template`, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`.
+1. Read `.workflow.lock`. For each installed module run `git -C <upstream> diff <commit>..HEAD -- modules/<name> skills/<name> template`, where `<commit>` is the module's own `commit` when it has one, else the top-level `commit`.
 2. Summarize the changes per module in plain words: rule added, rule removed, wording changed, placeholder added, file renamed.
 3. Ask whether to apply each module's changes. A rule removed upstream is removed from the target only with a yes. A rule listed in `skipped` is not offered again unless it changed upstream.
 4. Apply as in section 4, merging by meaning into the sections the lock lists and keeping the user's own edits to those sections.
