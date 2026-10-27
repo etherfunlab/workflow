@@ -1,6 +1,6 @@
 # ios-keyboard-page-shift
 
-Supplement: comes from no principle; for teams building mobile web pages.
+For teams building mobile web pages.
 
 ## What it is
 

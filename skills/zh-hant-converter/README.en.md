@@ -1,6 +1,6 @@
 # zh-hant-converter
 
-Supplement: comes from no principle; for teams working across Shenzhen and Hong Kong.
+For teams working across Shenzhen and Hong Kong.
 
 ## What it is
 
