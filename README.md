@@ -22,7 +22,7 @@
 
 | 事实 | 一句话 |
 |---|---|
-| prod 数据唯一只读通道 | 查线上只走一条封好的只读命令；原文不回显终端、不进报告，聚合在本地做 |
+| 分析类仓对 prod 只读 | 审计、报告、账务这类仓查线上只走一条封好的只读命令；做产品的仓可以查改。原文不回显终端、不进报告，聚合在本地做 |
 | 公开仓对外纪律 | 公开仓的 issue / PR 不出现私仓名、内部名、prod URL；实测证据匿名化给出 |
 | 一次只开一个 PR | 两个 PR 并行内容会缠在一起，解冲突的代价归人；开新 PR 被拒就停下来问 |
 | 数字标窗口、按部署切段 | 报告里的数字必须标取数窗口；一次部署就是一个 era，跨 era 的数据不混算 |
@@ -180,7 +180,7 @@ The discipline is widely accepted engineering practice; follow it as written. Th
 
 | Fact | In one line |
 |---|---|
-| One read-only channel to prod | Query production through one blessed read-only command; raw rows never reach the terminal or a report; aggregate locally |
+| Analysis repos are read-only on prod | Audit, reporting and accounting repos query production through one blessed read-only command; product repos may query and modify. Raw rows never reach the terminal or a report; aggregate locally |
 | Public-repo discipline | Public issues and PRs never name private repos, internal projects or prod URLs; evidence is anonymized |
 | One open PR at a time | Parallel PRs entangle, and the human pays for the conflicts; a refused PR means stop and ask |
 | Windows and eras on every number | Every reported number names its sampling window; one deploy is one era, and eras do not mix |

@@ -4,7 +4,7 @@ This file sits one directory above the repositories it governs (TODO: name the d
 
 ## Production data
 
-- The only channel to production data is TODO: the one blessed read-only command. Read-only, always.
+- Repositories that analyze the product (TODO: list them, such as audit, reporting and accounting repositories) are read-only on production data, through one channel only: TODO: the one blessed read-only command. Repositories that build the product may query and modify it.
 - Raw production rows never echo to the terminal and never go into a report. Write them to a local file, aggregate locally, publish aggregates only — and when the data can be traced to a person, publish with the owner's consent per occasion.
 
 ## Numbers in reports
