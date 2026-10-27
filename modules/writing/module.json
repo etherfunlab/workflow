@@ -25,5 +25,5 @@
     }
   ],
   "placeholders": {},
-  "copies": []
+  "copies": [{"from": "agent/WRITING.md", "to": "WRITING.md"}]
 }

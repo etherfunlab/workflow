@@ -21,10 +21,15 @@
 
 完整规则在 [`agent/rules/writing.md`](agent/rules/writing.md)。
 
+## 篇级宪法
+
+句级规则之外，模块还带一份 `WRITING.md` 装到仓根，管整篇：动笔前的三问定位、一篇只归一个读者、技术复盘的结构、byline 写实际分工、各文体的边界、反 AI 腔的结构层（为什么禁用词表拦不住、哪些句法框架在填空位，完整论证见 [blog 这篇](https://blog.etherfun.xyz/zh/posts/2026-09-02-word-blacklists-dont-stop-ai-prose)），以及最关键的一条：**哪一道工序拦哪一层**——判一条规则要的事实在句子外面时，只能起草拦；润色手上只有句子，见到只标不改、退回起草。
+
 ## 装进你仓里的是什么
 
 - Claude Code：`.claude/rules/writing.md`，带 `paths: ["**/*.md"]`，只在读写 Markdown 时载入。
 - 其他 agent：AGENTS.md 里的一节「When editing `**/*.md`」。
+- 两者通用：仓根 `WRITING.md`，成篇写作前读。
 
 ## 依赖
 

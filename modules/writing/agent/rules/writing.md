@@ -5,7 +5,7 @@ paths:
 
 # Writing rules
 
-Applies to every Markdown document written for people to read.
+Applies to every Markdown document written for people to read. These are the sentence-level rules; before drafting a whole document, read the repo's `WRITING.md` for the document level — positioning, structure, and which pipeline stage catches which class of problem.
 
 ## Plain verbs, precise nouns
 

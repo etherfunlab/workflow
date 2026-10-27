@@ -45,6 +45,7 @@ List every file you will create or change, one line each saying what goes in, me
 
 - The AGENTS.md of a template other than `base` is never copied as a file. It merges into the target's main rule file (defined under Rules below): its rows join the table under the same `##` heading, numbered after the rows already there; when that file has no such table, add the table under that heading, creating the heading only when it is missing. Its other `##` sections are appended; when that file already has a section with the same heading, merge into it as for module rules: skip what it already says in substance, and ask on a conflict.
 - Every other file is copied when the target lacks it. A file the target already has is skipped and named in the report.
+- `dev-root` is the exception to "same path": its CLAUDE.md goes to the directory above the target (`<target>/../CLAUDE.md`), never into the target — Claude Code loads parent-directory rule files for every repository underneath. When that file already exists, merge into it as for module rules. **[CC]** only: other agents do not read parent directories, so for them merge the rules the user wants into the target's AGENTS.md instead. The parent directory is usually not a git repository; offer the rules-files mirror hook for history.
 - `TODO:` marks a blank the team fills later. Keep each one as it is.
 
 **Rules** (`rules` in `module.json`):

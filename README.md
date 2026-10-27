@@ -10,9 +10,42 @@
 
 许多外行 vibe coder 缺少一种能力：主动降噪。用热力学来比喻，就是减熵。如果没有判断力去修正 AI 的产出，放任 agent 一直跑某个任务，上下文迟早被噪声淹没。
 
-这个仓 follow Claude 的宪法 AI 思想：先立原则、讲清理由，具体的规矩从原则里推出来。下面九条心法就是这里的原则。
+这个仓 follow Claude 的宪法 AI 思想：先立原则、讲清理由，具体的规矩从原则里推出来。「心法速查」那九条就是这里的原则。
 
 > 引用：Anthropic，[Claude's new constitution](https://www.anthropic.com/news/claude-new-constitution)（2026-01-22）；全文见 [Claude's Constitution](https://www.anthropic.com/constitution)；方法出处 [Constitutional AI: Harmlessness from AI Feedback](https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback)（2022）。
+
+## 纪律
+
+心法是我们的判断，纪律不是：这些是公认的工程实践，和心法无关，照做就行。第一张表就是[根目录 CLAUDE.md 模板](templates/dev-root/README.zh.md)的内容，装在各个 repo 上一层的目录里，对下面每个仓生效；第二张表由 [engineering 模块](modules/engineering/README.zh.md)装进各仓。
+
+**跨仓纪律**：
+
+| 事实 | 一句话 |
+|---|---|
+| prod 数据唯一只读通道 | 查线上只走一条封好的只读命令；原文不回显终端、不进报告，聚合在本地做 |
+| 公开仓对外纪律 | 公开仓的 issue / PR 不出现私仓名、内部名、prod URL；实测证据匿名化给出 |
+| 一次只开一个 PR | 两个 PR 并行内容会缠在一起，解冲突的代价归人；开新 PR 被拒就停下来问 |
+| 数字标窗口、按部署切段 | 报告里的数字必须标取数窗口；一次部署就是一个 era，跨 era 的数据不混算 |
+| 花用户钱的 API 一轮一停 | 按次计费的外部 API 不自动多轮迭代；只重试同一次调用的瞬时错误 |
+| 观感判官在人脑 | 观感、排版、文案语气不写自动断言；出齐约 3 个候选并排给人挑，停下等人挑是正确终点 |
+| 先查后问 | 报 bug 先去代码、日志里找根因，不复述现象求确认；证据分叉才问，问就给选项 |
+| 提交卫生 | commit 用英文 Conventional Commits；`.env` 和 secrets 永不入库；agent 的 shell 无状态，用 `conda run` 这类单次调用，不用 activate |
+
+**仓内工程姿态**：
+
+| 事实 | 一句话 |
+|---|---|
+| KISS | 三处相似代码胜过一个早产的抽象；不为还没出现的需求留扩展点 |
+| 一个事实一个权威源 | 数值、状态、判定条件各钉一处，其余一律派生 |
+| schema 与接口只认源码 | schema 以迁移文件为准，接口以代码为准，文档不存副本 |
+| 先复用再新增接口 | 加接口前先找现成的；拿不准放前端还是后端就先问 |
+| 调参降错不清零 | 逼近零是在拟合这批语料的噪声；指标持平不是待办 |
+| 看发布不看分支 | 线上跑的是哪一版看发布列表；部署前先想好回滚路径 |
+| 回归比失败集合 | 看失败用例的名字集合，不看条数 |
+| 契约先行 | 先声明接口契约再写实现；生成出来的 API 文档是产物，不是真相源 |
+| 外键建表时就定 | 引用列建表那次就加外键；可空性与 ON DELETE 一起定；每个外键配索引 |
+
+还有一条是我们的主张，不算公认，一并装在 engineering 模块里：**先放再收**。尺度、能力、权限先放开跑，看清真实上限和实际用法再收；收的是门槛（条件、档位、冷却、代价），不是把能力拔掉；没有实测过的兜底不提前收紧；放开那一步要留下读数。
 
 ## 心法速查
 
@@ -70,7 +103,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 
 | 模块 | 解决什么 | 装进你仓里的 | 出自心法 |
 |---|---|---|---|
-| [writing](modules/writing/README.zh.md) | 写作规范、用词规范、中文排版 | `.claude/rules/writing.md`（其他 agent：AGENTS.md 一节） | 菜就多练 |
+| [writing](modules/writing/README.zh.md) | 写作规范、用词规范、中文排版、篇级写作宪法 | `.claude/rules/writing.md`（其他 agent：AGENTS.md 一节）＋ 仓根 `WRITING.md` | 菜就多练 |
 | [checkup](modules/checkup/README.zh.md) | 定期体检规则文件 | skill `rules-checkup`；可选升级提醒 hook（仅 Claude Code） | 菜就多练 |
 | [rules-files](modules/rules-files/README.zh.md) | 怎么写 CLAUDE.md / AGENTS.md | `.claude/rules/rules-files.md`（其他 agent：AGENTS.md 一节） | 权威唯一 |
 | [engineering](modules/engineering/README.zh.md) | 工程姿态 | AGENTS.md 一节 | 代码为王、权威唯一、留心接口 |
@@ -88,6 +121,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 |---|---|---|---|
 | `base` | 所有新项目 | 索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md、`docs/superpowers/` | 约束优先 |
 | [frontend](templates/frontend/README.zh.md) | 前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`，AGENTS.md 并进一节 | 约束优先、权威唯一 |
+| [dev-root](templates/dev-root/README.zh.md) | 管着多个仓的上级目录 | 上一层目录的 CLAUDE.md（跨仓纪律；仅 Claude Code 自动载入） | 权威唯一 |
 
 ## 补充 skills
 
@@ -134,9 +168,42 @@ A textbook for building software with AI agents: the principles first, then the 
 
 Many amateur vibe coders lack one skill: active noise reduction. In thermodynamic terms, it means reducing entropy. If you don't have the judgment to correct what the AI produces, and you let an agent keep running on a task, the context will sooner or later drown in noise.
 
-This repo follows Claude's constitutional AI approach: set down the principles, explain the reasons, and derive the concrete rules from them. The nine principles below are this repo's.
+This repo follows Claude's constitutional AI approach: set down the principles, explain the reasons, and derive the concrete rules from them. The nine principles under "At a glance" are this repo's.
 
 > Sources: Anthropic, [Claude's new constitution](https://www.anthropic.com/news/claude-new-constitution) (2026-01-22); full text at [Claude's Constitution](https://www.anthropic.com/constitution); the method in [Constitutional AI: Harmlessness from AI Feedback](https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback) (2022).
+
+## Discipline
+
+The principles are our judgment. The discipline is not: it is widely accepted engineering practice, independent of the principles — just do it. The first table is the content of the [root-directory CLAUDE.md template](templates/dev-root/README.en.md), installed in the directory above your repositories so it covers every one of them; the second is what the [engineering module](modules/engineering/README.en.md) installs into each repository.
+
+**Cross-repo discipline**:
+
+| Fact | In one line |
+|---|---|
+| One read-only channel to prod | Query production through one blessed read-only command; raw rows never echo to the terminal or into a report — aggregate locally |
+| Public-repo discipline | Public issues and PRs never name private repos, internal projects or prod URLs; evidence is anonymized |
+| One open PR at a time | Parallel PRs entangle, and the human pays for the conflicts; a refused PR means stop and ask |
+| Windows and eras on every number | Every reported number names its sampling window; one deploy is one era, and eras do not mix |
+| Per-call APIs: one round, then stop | APIs billed per call never iterate automatically; only transient errors of the same call are retried |
+| Humans judge look-and-feel | No self-scoring scripts or assertions on aesthetics, layout or tone; produce about three candidates side by side and stop for the pick |
+| Investigate first, then ask | A bug report sends you to the code and logs for the cause, not back to the user for confirmation; ask only at a real fork, with options |
+| Commit hygiene | Conventional Commits in English; never commit `.env` or secrets; agent shells are stateless — single-shot invocations such as `conda run`, never activate |
+
+**In-repo engineering posture**:
+
+| Fact | In one line |
+|---|---|
+| KISS | Three similar blocks of code beat one premature abstraction; no extension points for requirements that do not exist |
+| One fact, one source | Each value, state or condition lives in one place; everything else derives |
+| Schema and interfaces from source | Schema comes from migration files, interfaces from code; documentation keeps no copies |
+| Reuse before adding | Look for an existing interface first; unsure between frontend and backend, ask |
+| Tune down, don't chase zero | Zero fits this corpus's noise; a metric that held level is not a to-do |
+| Releases, not branches | The release list says what is running; decide the rollback path before deploying |
+| Regressions by failing set | Compare the set of failing test names, not the count |
+| Contract before handler | Declare the interface contract before implementing it; generated API docs are artifacts, not the source of truth |
+| Foreign keys at table creation | A referencing column gets its FK in the migration that creates it; nullability and ON DELETE are one decision; index every FK |
+
+One more is our position rather than consensus, shipped in the same module: **default-open, then ratchet the gate**. Open capabilities first to learn the real ceiling and actual usage, then tighten; tightening raises a threshold (a condition, a tier, a cooldown, a cost) and never removes the capability; no pre-emptive tightening before a tested fallback; the open phase must leave readings behind.
 
 ## At a glance
 
@@ -194,7 +261,7 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 
 | Module | What it solves | What lands in your repo | From the principle |
 |---|---|---|---|
-| [writing](modules/writing/README.en.md) | Writing and word-choice rules, Chinese typography | `.claude/rules/writing.md` (other agents: a section in AGENTS.md) | Weak? Practice. |
+| [writing](modules/writing/README.en.md) | Writing and word-choice rules, Chinese typography, a document-level writing constitution | `.claude/rules/writing.md` (other agents: a section in AGENTS.md) + `WRITING.md` at the repo root | Weak? Practice. |
 | [checkup](modules/checkup/README.en.md) | Periodic checkup of rule files | skill `rules-checkup`; optional upgrade-reminder hook (Claude Code only) | Weak? Practice. |
 | [rules-files](modules/rules-files/README.en.md) | How to write CLAUDE.md / AGENTS.md | `.claude/rules/rules-files.md` (other agents: a section in AGENTS.md) | One source of truth |
 | [engineering](modules/engineering/README.en.md) | Engineering posture | a section in AGENTS.md | Code is king, One source of truth, Watch the interfaces |
@@ -212,6 +279,7 @@ A new project always starts from `base`, with one template for its kind of proje
 |---|---|---|---|
 | `base` | every new project | an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, `docs/superpowers/` | Constraints first |
 | [frontend](templates/frontend/README.en.md) | frontend projects | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, and a section merged into AGENTS.md | Constraints first, One source of truth |
+| [dev-root](templates/dev-root/README.en.md) | the directory above several repos | a CLAUDE.md in the parent directory (cross-repo discipline; auto-loaded by Claude Code only) | One source of truth |
 
 ## Supplementary skills
 

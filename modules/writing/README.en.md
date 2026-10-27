@@ -21,10 +21,15 @@ Model-written prose leaves a fixed set of traces: prestige words that point at n
 
 The full rules are in [`agent/rules/writing.md`](agent/rules/writing.md).
 
+## The constitution
+
+Beyond the sentence level, the module ships a `WRITING.md` installed at the repo root to govern whole documents: the three questions to answer before drafting, one document one reader, the structure of a technical retrospective, bylines that state the actual division of labor, the boundaries between document types, the structural layer of AI-sounding prose (why word blacklists fall short and which syntactic frames fill empty slots — full argument [on the blog](https://blog.etherfun.xyz/posts/2026-09-02-word-blacklists-dont-stop-ai-prose)), and the load-bearing rule: **which stage of the pipeline catches which layer** — when the facts needed to judge a rule live outside the sentence, only drafting can catch it; polishing holds only the sentences, so it flags the spot and hands it back.
+
 ## What gets installed
 
 - Claude Code: `.claude/rules/writing.md` with `paths: ["**/*.md"]`, loaded only when Markdown is read or written.
 - Other agents: a section in AGENTS.md, "When editing `**/*.md`".
+- Both: `WRITING.md` at the repo root, read before drafting a whole document.
 
 ## Dependencies
 
