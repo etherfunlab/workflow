@@ -131,6 +131,7 @@ EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。�
 |---|---|---|
 | [zh-hant-converter](skills/zh-hant-converter/README.zh.md) | 简繁转换：对内只转字形，对外连词汇一起换 | 深港团队 |
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | 做移动端网页的团队 |
+| [macos-disk-cleanup](skills/macos-disk-cleanup/README.zh.md) | Mac 硬盘快满：清编译产物和缓存，每项先确认能删再删 | 在 Mac 上做开发的人 |
 
 ## 怎么用
 
@@ -289,6 +290,7 @@ EtherFun Lab built these skills for its own projects and keeps them in [`skills/
 |---|---|---|
 | [zh-hant-converter](skills/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese: glyphs only for internal docs, vocabulary too for product pages | teams across Shenzhen and Hong Kong |
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | teams building mobile web pages |
+| [macos-disk-cleanup](skills/macos-disk-cleanup/README.en.md) | Mac disk nearly full: clear build output and caches, checking each is safe to delete first | developers on a Mac |
 
 ## How to use
 
