@@ -2,6 +2,36 @@
 
 [简体中文](#简体中文) · [English](#english)
 
+## 怎么用
+
+把这句话发给你的 agent：
+
+```
+读 https://github.com/etherfunlab/workflow，按 ADOPT.md 接进我的项目。
+```
+
+- **新项目**：agent 问你要哪几个模块和模板，列出改动清单，你点头后它先铺 `templates/base/`，叠上你选的模板，再装模块。
+- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块和模板、规则用中文还是英文、skills 装在项目级还是用户级（有模块装 skill 时才问）、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你仓里已有的同义规则它会跳过，冲突的规则由你选。
+- **仓外的规则**：新项目和已有项目都一样，agent 会读你用户级和上层目录的规则文件。某条规则只在那里有的，它会问你跳过还是照装；跳过的话，别人 clone 这个仓，或者换一台机器、换一个 agent，那条规则就不在了。
+- **更新**：装完后你的仓里有一个 `.workflow.lock`，记着装了哪些模块、对应上游哪个 commit。把这个仓再交给 agent 一次，它会找出上游从那个 commit 到最新版之间的改动，按模块讲给你听，你点头再合。
+
+只有 Claude Code 才有的部分（hooks、`.claude/rules/` 路径规则）都单独标出来了。Codex 等其他 agent 会跳过 hooks，把路径规则写进 AGENTS.md。
+
+## How to use
+
+Send your agent this:
+
+```
+Read https://github.com/etherfunlab/workflow and wire it into my project by following ADOPT.md.
+```
+
+- **New project**: the agent asks which modules and templates you want and lists every change; once you say yes it lays down `templates/base/`, layers the template you chose on top, then installs the modules.
+- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules and templates you want, whether rules should be in Chinese or English, whether skills go at project or user level (asked only when a module installs skills), and which optional hooks to install. Before writing anything it lists every file it will change. Rules your repo already has are skipped; where a rule conflicts with yours, you choose.
+- **Rules outside the repo**: for new and existing projects alike, the agent reads your user-level and parent-directory rule files. When a rule exists only there, it asks whether to skip it or install it anyway; if you skip it, the rule won't be there for anyone who clones the repo, or when you switch to another machine or agent.
+- **Update**: after installation your repo has a `.workflow.lock` recording the modules and the upstream commit. Hand this repo to your agent again; it collects the upstream changes since that commit, walks you through them module by module, and merges what you approve.
+
+Parts that need Claude Code (hooks, `.claude/rules/` path rules) are marked. Codex and other agents skip the hooks and get path rules as sections in AGENTS.md.
+
 # 简体中文
 
 一本用 AI agent 做开发的教科书：先讲心法，再给由心法推出来的规矩和工具。出自 EtherFun Lab，写给工程背景的读者：用 agent 开发的人、刚入门的 vibe coder、junior 开发者和以后的同事。
@@ -44,6 +74,7 @@
 | 回归比失败集合 | 看失败用例的名字集合，不看条数 |
 | 契约先行 | 先声明接口契约再写实现；生成出来的 API 文档是产物，不是真相源 |
 | 外键建表时就定 | 引用列建表那次就加外键；可空性与 ON DELETE 一起定；每个外键配索引 |
+| 删就删干净 | 删掉的代码和文档不在文件、注释里留墓碑，要交代就写进 commit message；删后真被加回来过的，才留一句「勿加回：X，原因 Y」 |
 
 还有一条是我们的主张，不算公认，一并装在 engineering 模块里：**先放再收**。尺度、能力、权限先放开跑，看清真实上限和实际用法再收。收的是门槛（条件、档位、冷却、代价），不是把能力拔掉。没有实测过的兜底，不提前收紧。放开那一步要留下读数。
 
@@ -133,21 +164,6 @@ EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。�
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | 做移动端网页的团队 |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.zh.md) | Mac 硬盘快满：清编译产物和缓存，每项先确认能删再删 | 在 Mac 上做开发的人 |
 
-## 怎么用
-
-把这句话发给你的 agent：
-
-```
-读 https://github.com/etherfunlab/workflow，按 ADOPT.md 接进我的项目。
-```
-
-- **新项目**：agent 问你要哪几个模块和模板，列出改动清单，你点头后它先铺 `templates/base/`，叠上你选的模板，再装模块。
-- **已有项目**：agent 先读完你现有的 CLAUDE.md、AGENTS.md、`.claude/` 和 git hooks，再问你要哪几个模块和模板、规则用中文还是英文、skills 装在项目级还是用户级（有模块装 skill 时才问）、要不要装可选的 hook。动手之前它会列出要改的每一个文件。你仓里已有的同义规则它会跳过，冲突的规则由你选。
-- **仓外的规则**：新项目和已有项目都一样，agent 会读你用户级和上层目录的规则文件。某条规则只在那里有的，它会问你跳过还是照装；跳过的话，别人 clone 这个仓，或者换一台机器、换一个 agent，那条规则就不在了。
-- **更新**：装完后你的仓里有一个 `.workflow.lock`，记着装了哪些模块、对应上游哪个 commit。把这个仓再交给 agent 一次，它会找出上游从那个 commit 到最新版之间的改动，按模块讲给你听，你点头再合。
-
-只有 Claude Code 才有的部分（hooks、`.claude/rules/` 路径规则）都单独标出来了。Codex 等其他 agent 会跳过 hooks，把路径规则写进 AGENTS.md。
-
 ## 依赖的上游
 
 - [superpowers](https://github.com/obra/superpowers)：brainstorming → spec → plan → 实施的流程
@@ -203,6 +219,7 @@ The discipline is widely accepted engineering practice; follow it as written. Th
 | Regressions by failing set | Compare the set of failing test names, not the count |
 | Contract before handler | Declare the interface contract before implementing it; generated API docs are artifacts, not the source of truth |
 | Foreign keys at table creation | A referencing column gets its FK in the migration that creates it; nullability and ON DELETE are one decision; index every FK |
+| Delete cleanly | Removed code and docs leave no tombstone in files or comments; any explanation goes in the commit message. Only something actually added back after removal keeps one line, "Do not re-add X: reason Y" |
 
 One more rule is our own position rather than consensus, and it ships in the same module: **default-open, then ratchet the gate**. Open up scope, capabilities and permissions first, and tighten once you have seen the real ceiling and actual usage. Tightening raises a threshold (a condition, a tier, a cooldown, a cost) and never removes the capability. No pre-emptive tightening before a fallback has been tested. The open phase must leave readings behind.
 
@@ -291,21 +308,6 @@ EtherFun Lab built these skills for its own projects and keeps them in [`skills/
 | [zh-hant-converter](skills/zh-hant-converter/README.en.md) | Simplified → Traditional Chinese: glyphs only for internal docs, vocabulary too for product pages | teams across Shenzhen and Hong Kong |
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | teams building mobile web pages |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.en.md) | Mac disk nearly full: clear build output and caches, checking each is safe to delete first | developers on a Mac |
-
-## How to use
-
-Send your agent this:
-
-```
-Read https://github.com/etherfunlab/workflow and wire it into my project by following ADOPT.md.
-```
-
-- **New project**: the agent asks which modules and templates you want and lists every change; once you say yes it lays down `templates/base/`, layers the template you chose on top, then installs the modules.
-- **Existing project**: the agent first reads your CLAUDE.md, AGENTS.md, `.claude/` and git hooks, then asks which modules and templates you want, whether rules should be in Chinese or English, whether skills go at project or user level (asked only when a module installs skills), and which optional hooks to install. Before writing anything it lists every file it will change. Rules your repo already has are skipped; where a rule conflicts with yours, you choose.
-- **Rules outside the repo**: for new and existing projects alike, the agent reads your user-level and parent-directory rule files. When a rule exists only there, it asks whether to skip it or install it anyway; if you skip it, the rule won't be there for anyone who clones the repo, or when you switch to another machine or agent.
-- **Update**: after installation your repo has a `.workflow.lock` recording the modules and the upstream commit. Hand this repo to your agent again; it collects the upstream changes since that commit, walks you through them module by module, and merges what you approve.
-
-Parts that need Claude Code (hooks, `.claude/rules/` path rules) are marked. Codex and other agents skip the hooks and get path rules as sections in AGENTS.md.
 
 ## Upstream
 
