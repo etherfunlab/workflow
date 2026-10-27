@@ -13,11 +13,11 @@ Most of the space you can reclaim in one piece under {{DEV_ROOT}} sits in two pl
 bash <this skill's directory>/scan.sh {{DEV_ROOT}}
 ```
 
-Output: one line per worktree, `REMOVE` or `KEEP(<reason>)`, with the path of its main repository; one line per `target/` with its size and the cargo of that repository's pinned toolchain, marked `BUSY` when cargo or rustc is running inside it.
+Output: one line per worktree, `REMOVE` or `KEEP(<reason>)`, with the path of its main repository; one line per `target/` with its size and the cargo of the toolchain pinned in that repository or a parent directory, marked `BUSY` when cargo or rustc is running inside it. When `lsof` lists no process at all, the scan exits with an error instead of guessing.
 
 ## 2. Worktrees: remove only those marked REMOVE
 
-The scan says REMOVE when the worktree has no uncommitted changes (untracked dirs carrying `CACHEDIR.TAG` are tool caches and do not count), no process has its cwd inside it, and one of these holds:
+The scan says REMOVE when `git status` succeeds and shows no uncommitted changes, untracked files included whatever `status.showUntrackedFiles` says (untracked dirs whose `CACHEDIR.TAG` carries the Cache Directory Tagging signature are tool caches and do not count), no process has its cwd inside it, and one of these holds:
 - On a branch: the branch's PR is MERGED, and the worktree HEAD equals the PR's head commit (no local commits after the merge).
 - Detached HEAD: HEAD is on some remote branch.
 

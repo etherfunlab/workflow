@@ -9,9 +9,9 @@ Everything in the table below is downloaded or rebuilt again the next time it is
 
 Before starting, record free space with `df -h /System/Volumes/Data`, and record each item's size with `du -sh` before deleting it. Skip any row whose command does not exist.
 
-| Cache | Precondition | Command |
+| Cache | Extra precondition | Command |
 |---|---|---|
-| Homebrew downloads | none | `brew cleanup -s --prune=all` |
+| Homebrew downloads and old versions | none | `brew cleanup -s --prune=all` |
 | npm | none | `npm cache clean --force` |
 | npx packages | `pgrep -f _npx` is empty (MCP servers started by npx run from here) | `rm -rf ~/.npm/_npx`; `npm cache clean` does not touch this directory |
 | pnpm store | none | `pnpm store prune` |
@@ -22,11 +22,11 @@ Before starting, record free space with `df -h /System/Volumes/Data`, and record
 | Microsoft Edge | `pgrep -x "Microsoft Edge"` is empty | `rm -rf ~/Library/Caches/Microsoft\ Edge` |
 | VS Code update leftovers | VS Code is closed | `rm -rf ~/Library/Caches/com.microsoft.VSCode.ShipIt` |
 | Simulator dyld cache | stale ones only, see below | `xcrun simctl runtime dyld_shared_cache remove <runtime>` |
-| Unused Rust toolchains | see below | `rustup toolchain uninstall <name>` |
+| Unused Rust toolchains | `pgrep -x cargo` and `pgrep -x rustc` are empty; keep list below | `rustup toolchain uninstall <name>` |
 
 **Simulator dyld cache**: `/Library/Developer/CoreSimulator/Caches/dyld/<host build>/<runtime>/`. A cache is stale only when its host build differs from `sw_vers -buildVersion` or its runtime is no longer in `xcrun simctl runtime list`. Deleting the current one reclaims nothing: the next simulator launch rebuilds it as it was.
 
-**Rust toolchains**: keep `stable`, `*-sbpf-solana-*` (installed by Solana's build tools), and every channel pinned in a `rust-toolchain` or `rust-toolchain.toml` anywhere under {{DEV_ROOT}}. The rest of `~/.rustup/toolchains` can be uninstalled.
+**Rust toolchains**: keep `stable`, the default (`rustup default`), every directory override (`rustup override list`), custom toolchains linked with `rustup toolchain link` (they are not re-downloadable), `*-sbpf-solana-*` (installed by Solana's build tools), and every channel pinned in a `rust-toolchain` or `rust-toolchain.toml` anywhere under {{DEV_ROOT}}. The rest of `~/.rustup/toolchains` can be uninstalled.
 
 When a precondition fails (Edge is open, say), skip that row and tell the user at the end how to clear it later. When a permission check or classifier blocks an `rm -rf`, do not route around it; hand the command to the user to run themselves (in Claude Code: `! <command>`).
 
