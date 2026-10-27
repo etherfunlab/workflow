@@ -22,7 +22,7 @@
 
 | 事实 | 一句话 |
 |---|---|
-| 分析类仓对 prod 只读 | 审计、报告、账务这类仓查线上只走一条封好的只读命令；做产品的仓可以查改。原文不回显终端、不进报告，聚合在本地做 |
+| prod 数据唯一通道，分析类仓只读 | 所有仓查线上都只走一条封好的命令；审计、报告、账务这类仓只读，做产品的仓可以查改。原文不回显终端、不进报告，聚合在本地做 |
 | 公开仓对外纪律 | 公开仓的 issue / PR 不出现私仓名、内部名、prod URL；实测证据匿名化给出 |
 | 一次只开一个 PR | 两个 PR 并行内容会缠在一起，解冲突的代价归人；开新 PR 被拒就停下来问 |
 | 数字标窗口、按部署切段 | 报告里的数字必须标取数窗口；一次部署就是一个 era，跨 era 的数据不混算 |
@@ -81,7 +81,7 @@ Git repo 就是最好的记忆库加上下文库。commit 加 PR 的设计不但
 
 ### 权威唯一
 
-权威文档只存一份，并且写进记忆，告诉 agent 要去哪读。一开始我建了一个文档库，把 spec、plan、milestone、schema、API 全放进去，后来发现字段定义东一块西一块：有的在文档库，有的在代码里，有的在项目 repo 自己的 `docs/`。于是我约定：文档库只放项目全局的 overall spec 和给人看的文档，spec 放项目自己的 `docs/superpowers/`，schema 定义只认 `migration/*.sql`，接口定义只认代码。我让 agent 整理的 Rust 名词对照表就属于给人看的文档，有了它，我才读得懂 agent 写 Rust 时做了啥。
+权威文档只存一份，并且写进记忆，告诉 agent 要去哪读。一开始我建了一个文档库，把 spec、plan、milestone、schema、API 全放进去，后来发现字段定义东一块西一块：有的在文档库，有的在代码里，有的在项目 repo 自己的 `docs/`。于是我约定：文档库只放项目全局的 overall spec 和给人看的文档，spec 放项目自己的 `docs/superpowers/`，schema 定义只认 `migration/*.sql`，接口定义只认代码。我让 agent 整理的 Rust 名词对照表就属于给人看的文档，方便我读懂 agent 写 Rust 时做了啥。
 
 ### CLI 互调
 
@@ -180,7 +180,7 @@ The discipline is widely accepted engineering practice; follow it as written. Th
 
 | Fact | In one line |
 |---|---|
-| Analysis repos are read-only on prod | Audit, reporting and accounting repos query production through one blessed read-only command; product repos may query and modify. Raw rows never reach the terminal or a report; aggregate locally |
+| One channel to prod, analysis repos read-only | Every repo reaches production through one blessed command; audit, reporting and accounting repos only read, and product repos may query and modify. Raw rows never reach the terminal or a report; aggregate locally |
 | Public-repo discipline | Public issues and PRs never name private repos, internal projects or prod URLs; evidence is anonymized |
 | One open PR at a time | Parallel PRs entangle, and the human pays for the conflicts; a refused PR means stop and ask |
 | Windows and eras on every number | Every reported number names its sampling window; one deploy is one era, and eras do not mix |
