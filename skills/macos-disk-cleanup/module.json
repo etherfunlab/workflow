@@ -1,0 +1,25 @@
+{
+  "name": "macos-disk-cleanup",
+  "principles": [],
+  "role": "extra",
+  "depends_on": [],
+  "rules": [],
+  "skills": [
+    "cleaning-dev-build-artifacts",
+    "cleaning-dev-caches"
+  ],
+  "hooks": [],
+  "git_hooks": [],
+  "requires": [
+    "git",
+    "gh"
+  ],
+  "upstream_skills": [],
+  "placeholders": {
+    "DEV_ROOT": {
+      "description": "directory that holds your repositories",
+      "default": "~/dev"
+    }
+  },
+  "copies": []
+}
