@@ -74,7 +74,7 @@ Parts that need Claude Code (hooks, `.claude/rules/` path rules) are marked. Cod
 | 回归比失败集合 | 看失败用例的名字集合，不看条数 |
 | 契约先行 | 先声明接口契约再写实现；生成出来的 API 文档是产物，不是真相源 |
 | 外键建表时就定 | 引用列建表那次就加外键；可空性与 ON DELETE 一起定；每个外键配索引 |
-| 删就删干净 | 删掉的代码和文档不在文件、注释里留墓碑，要交代就写进 commit message；删后真被加回来过的，才留一句「勿加回：X，原因 Y」 |
+| 删就删干净 | 删掉的代码、配置、文档不在原处留墓碑，要交代就写进 commit message；changelog、迁移、runbook 照常记录变更；删后真被加回来过的，才留一句「勿加回：X，原因 Y」 |
 
 还有一条是我们的主张，不算公认，一并装在 engineering 模块里：**先放再收**。尺度、能力、权限先放开跑，看清真实上限和实际用法再收。收的是门槛（条件、档位、冷却、代价），不是把能力拔掉。没有实测过的兜底，不提前收紧。放开那一步要留下读数。
 
@@ -219,7 +219,7 @@ The discipline is widely accepted engineering practice; follow it as written. Th
 | Regressions by failing set | Compare the set of failing test names, not the count |
 | Contract before handler | Declare the interface contract before implementing it; generated API docs are artifacts, not the source of truth |
 | Foreign keys at table creation | A referencing column gets its FK in the migration that creates it; nullability and ON DELETE are one decision; index every FK |
-| Delete cleanly | Removed code and docs leave no tombstone in files or comments; any explanation goes in the commit message. Only something actually added back after removal keeps one line, "Do not re-add X: reason Y" |
+| Delete cleanly | Removed code, config and docs leave no tombstone where they were; any explanation goes in the commit message. Changelogs, migrations and runbooks still record changes. Only something actually added back after removal keeps one line, "Do not re-add X: reason Y" |
 
 One more rule is our own position rather than consensus, and it ships in the same module: **default-open, then ratchet the gate**. Open up scope, capabilities and permissions first, and tighten once you have seen the real ceiling and actual usage. Tightening raises a threshold (a condition, a tier, a cooldown, a cost) and never removes the capability. No pre-emptive tightening before a fallback has been tested. The open phase must leave readings behind.
 
