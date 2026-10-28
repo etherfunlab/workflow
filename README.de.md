@@ -43,7 +43,7 @@ Die Disziplin ist allgemein anerkannte Engineering-Praxis; halte dich einfach da
 | Fenster und Ären an jeder Zahl | Jede berichtete Zahl nennt ihr Zeitfenster; ein Deploy ist eine Ära, Ären werden nicht vermischt |
 | Pro Aufruf abgerechnete APIs: eine Runde, dann Stopp | Pro Aufruf abgerechnete externe APIs iterieren nie automatisch; wiederholt werden nur transiente Fehler desselben Aufrufs |
 | Look-and-Feel beurteilen Menschen | Keine Selbstbewertungs-Skripte und keine Assertions auf Ästhetik, Layout oder Tonfall; etwa drei Kandidaten nebeneinander liefern, dann anhalten und die Wahl abwarten |
-| Erst nachforschen, dann fragen | Ein Bug-Report schickt dich für die Ursache in Code und Logs, nicht zurück zum Nutzer, um Bestätigung einzuholen; gefragt wird nur an einer echten Weggabelung, mit Optionen |
+| Erst nachforschen, dann fragen | Bei einem Bug-Report suchst du die Ursache in Code und Logs, statt dir die Symptome vom Nutzer bestätigen zu lassen; gefragt wird nur an einer echten Weggabelung, mit Optionen |
 | Commit-Hygiene | Conventional Commits auf Englisch; `.env` und Secrets werden nie committet; die Shell eines Agenten ist zustandslos, also Einzelaufrufe wie `conda run`, nie activate |
 
 **Engineering-Haltung im Repo**:
@@ -69,7 +69,7 @@ Eine weitere Regel ist unsere eigene Position und kein Konsens; sie kommt im sel
 |---|---|
 | Vorgaben zuerst | Erst beschneiden: design → spec → plan → impl; je klarer die Anforderung, desto weniger geht schief |
 | Code ist König | Quellcode ist die beste Anleitung für den Agenten; press Code nicht in „menschenlesbare“ Formate |
-| Repo als Gedächtnis | Das Git-Repo ist Gedächtnis- und Kontextspeicher; Memory synchronisieren braucht `.memory/` und einen Hook |
+| Repo als Gedächtnis | Das Git-Repo ist Gedächtnis- und Kontextspeicher; zum Synchronisieren von Memory reichen `.memory/` und ein Hook |
 | Schwach? Üben. | Diese Urteile ersetzt die KI nicht, aber sie kann sie dir beibringen; lerne gründlich |
 | Eine Quelle der Wahrheit | Jedes maßgebliche Dokument genau einmal ablegen; dem Agenten im Memory sagen, wo er es liest |
 | CLIs rufen CLIs auf | Claude Code steuert gh, codex, die Datenbank-CLI und fly |
@@ -109,7 +109,7 @@ Claude Code erfindet manchmal versehentlich eine neue Schnittstelle. Schreib ein
 
 ### Erst reden, dann los
 
-Weißt du nicht, wie du eine Anforderung umsetzen sollst, sind Skills wie superpowers und gstack eine Option. Eine andere: erst mit einem Web-LLM (ChatGPT, Grok) darüber sprechen, daraus einen Prompt schreiben lassen und den an Claude Code übergeben, damit es brainstorming ausführt. Das schlägt es allemal, seinen Wunsch in Alltagssprache zu beschwören.
+Weißt du nicht, wie du eine Anforderung umsetzen sollst, sind Skills wie superpowers und gstack eine Option. Eine andere: erst mit einem Web-LLM (ChatGPT, Grok) darüber sprechen, daraus einen Prompt schreiben lassen und den an Claude Code übergeben, damit es brainstorming ausführt. Das ist allemal besser, als seinen Wunsch in Alltagssprache zu beschwören.
 
 ### Issues zwischen Repos
 
