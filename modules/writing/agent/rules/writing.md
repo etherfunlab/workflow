@@ -45,6 +45,12 @@ State results. No slogans, inflated claims or filler paragraphs. Plans for the f
 - No en-dash (U+2013). Use ASCII `-` for ranges.
 - The Chinese dash 「——」 is allowed.
 
+## Japanese wording (documents containing Japanese)
+
+- Prefer kanji: Wasei-kango (情報、概念) and native kanji words (仕組み、雛形) first; use as few katakana loanwords as possible.
+- Technical terms, meaning the names of software concepts, tools and operations, keep their English names and are never transcribed into katakana: agent, commit, PR, hook, prompt, not エージェント、コミット. This holds even when the katakana form is common. Ordinary words in a technical document (文書、手順) are not technical terms.
+- Keep katakana only for an ordinary word already in common use that has no fitting kanji word (チーム).
+
 ## Polishing skills
 
 - Chinese prose → `human-writing` (https://github.com/Tao716/human-writing-skill). English prose → `humanizer` (https://github.com/blader/humanizer).

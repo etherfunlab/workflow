@@ -18,6 +18,7 @@ Model-written prose leaves a fixed set of traces: prestige words that point at n
 - **Contrast constructions are blocked by default.** Write "not A, but B" only when you can name where the reading A comes from: a review comment, an earlier version, another document's conclusion, a misleading signal in real data. Without a source, A is a straw man; delete it. Quotations stay verbatim, contrast and all. Drafting and final review enforce this; polishing only flags it.
 - **No padding.** State results, not slogans. Future plans are fine when marked as plans.
 - **Chinese typography.** The Chinese typography rules apply to documents containing Chinese; see README.zh.md.
+- **Japanese wording.** In documents containing Japanese, prefer kanji: Wasei-kango and native kanji words first, as few katakana loanwords as possible. Technical terms, the names of software concepts, tools and operations (agent, commit, hook), keep their English names even when a katakana form is common. Katakana stays only for ordinary words already in common use with no fitting kanji word.
 
 The full rules are in [`agent/rules/writing.md`](agent/rules/writing.md).
 

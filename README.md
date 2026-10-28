@@ -154,7 +154,7 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 
 | Module | What it solves | What lands in your repo |
 |---|---|---|
-| [writing](modules/writing/README.en.md) | Writing and word-choice rules, Chinese typography, a document-level writing constitution | `.claude/rules/writing.md` (other agents: a section in AGENTS.md) + `WRITING.md` at the repo root |
+| [writing](modules/writing/README.en.md) | Writing and word-choice rules, Chinese typography, Japanese wording, a document-level writing constitution | `.claude/rules/writing.md` (other agents: a section in AGENTS.md) + `WRITING.md` at the repo root |
 | [checkup](modules/checkup/README.en.md) | Periodic checkup of rule files | skill `rules-checkup`; optional upgrade-reminder hook (Claude Code only) |
 | [rules-files](modules/rules-files/README.en.md) | How to write CLAUDE.md / AGENTS.md | `.claude/rules/rules-files.md` (other agents: a section in AGENTS.md) |
 | [engineering](modules/engineering/README.en.md) | Engineering posture | a section in AGENTS.md |

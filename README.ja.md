@@ -121,7 +121,7 @@ GitHub の issue は本当に便利です。いまは repo をまたぐ問題が
 
 | module | 解決すること | repo に導入されるもの |
 |---|---|---|
-| [writing](modules/writing/README.en.md) | 文章の規範、用語の規範、中国語の組版、文書単位の執筆憲法 | `.claude/rules/writing.md`（他の agent：AGENTS.md の一節）＋ repo 直下の `WRITING.md` |
+| [writing](modules/writing/README.en.md) | 文章の規範、用語の規範、中国語の組版、日本語の用字、文書単位の執筆憲法 | `.claude/rules/writing.md`（他の agent：AGENTS.md の一節）＋ repo 直下の `WRITING.md` |
 | [checkup](modules/checkup/README.en.md) | 規則 file の定期点検 | skill `rules-checkup`、任意の更新通知 hook（Claude Code のみ） |
 | [rules-files](modules/rules-files/README.en.md) | CLAUDE.md / AGENTS.md の書き方 | `.claude/rules/rules-files.md`（他の agent：AGENTS.md の一節） |
 | [engineering](modules/engineering/README.en.md) | engineering の姿勢 | AGENTS.md の一節 |
