@@ -119,7 +119,7 @@ GitHub Issues sind großartig. Bei Problemen über Repo-Grenzen hinweg lasse ich
 
 | Modul | Was es löst | Landet in deinem Repo |
 |---|---|---|
-| [writing](modules/writing/README.en.md) | Schreib- und Wortwahlregeln, chinesische Typografie, eine Schreibverfassung auf Dokumentebene | `.claude/rules/writing.md` (andere Agenten: ein Abschnitt in der AGENTS.md) + `WRITING.md` im Repo-Root |
+| [writing](modules/writing/README.en.md) | Schreib- und Wortwahlregeln, chinesische Typografie, japanische Wortwahl, eine Schreibverfassung auf Dokumentebene | `.claude/rules/writing.md` (andere Agenten: ein Abschnitt in der AGENTS.md) + `WRITING.md` im Repo-Root |
 | [checkup](modules/checkup/README.en.md) | Regelmäßiger Check-up der Regeldateien | Skill `rules-checkup`; optionaler Hook für Upgrade-Erinnerungen (nur Claude Code) |
 | [rules-files](modules/rules-files/README.en.md) | Wie man CLAUDE.md / AGENTS.md schreibt | `.claude/rules/rules-files.md` (andere Agenten: ein Abschnitt in der AGENTS.md) |
 | [engineering](modules/engineering/README.en.md) | Engineering-Haltung | ein Abschnitt in der AGENTS.md |

@@ -100,7 +100,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 
 | 模块 | 解决什么 | 装进你仓里的 |
 |---|---|---|
-| [writing](modules/writing/README.zh.md) | 写作规范、用词规范、中文排版、篇级写作宪法 | `.claude/rules/writing.md`（其他 agent：AGENTS.md 一节）＋ 仓根 `WRITING.md` |
+| [writing](modules/writing/README.zh.md) | 写作规范、用词规范、中文排版、日文用字、篇级写作宪法 | `.claude/rules/writing.md`（其他 agent：AGENTS.md 一节）＋ 仓根 `WRITING.md` |
 | [checkup](modules/checkup/README.zh.md) | 定期体检规则文件 | skill `rules-checkup`；可选升级提醒 hook（仅 Claude Code） |
 | [rules-files](modules/rules-files/README.zh.md) | 怎么写 CLAUDE.md / AGENTS.md | `.claude/rules/rules-files.md`（其他 agent：AGENTS.md 一节） |
 | [engineering](modules/engineering/README.zh.md) | 工程姿态 | AGENTS.md 一节 |
