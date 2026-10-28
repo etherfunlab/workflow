@@ -22,7 +22,8 @@
 </p>
 
 <p align="center">
-  <a href="README.zh.md">简体中文全文 →</a> · <a href="#active-noise-reduction">English text below ↓</a>
+  <a href="README.zh.md">简体中文全文 →</a> · <a href="#active-noise-reduction">English text below ↓</a><br>
+  <a href="README.de.md">Deutsch</a> · <a href="README.ja.md">日本語</a>
 </p>
 
 ## 怎么用
