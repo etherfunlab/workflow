@@ -81,4 +81,31 @@ fresh; rm "$tmp/http/https___raw.githubusercontent.com_Homebrew_install_HEAD_ins
 t_exit "unreachable brew installer stops the run" 1 install
 t_out "stop names the log" 'installer\s+FAIL\n\n.*curl .*exited 22\..*\n(\s+│.*\n){1,3}\s+Full log: .*setup\.log\n\s+Fix the problem and run the same command again' install
 
+# oh-my-zsh and powerlevel10k.
+p10k="themes/powerlevel10k"
+fresh; install >/dev/null
+t_out "omz default installer" 'curl .*raw\.githubusercontent\.com/ohmyzsh/ohmyzsh/master/tools/install\.sh' calls
+t_true "omz unattended keeps zshrc" grep -q -- "--unattended --keep-zshrc" "$SETUP_LOG"
+t_out "p10k default clones github" 'git clone --depth=1 https://github\.com/romkatv/powerlevel10k\.git' calls
+fresh; SETUP_MIRROR=jsdelivr install >/dev/null
+t_out "omz mirror installer" 'curl .*install\.ohmyz\.sh/' calls
+t_true "omz mirror mode without failure stays on github" bash -c '! grep -q "gitee\.com/mirrors/oh-my-zsh" "$1"' _ "$SETUP_LOG"
+t_out "p10k mirror lists the pinned commit" "data\.jsdelivr\.com/v1/packages/gh/romkatv/powerlevel10k@$P10K_COMMIT\?structure=flat" calls
+t_true "p10k mirror fetched every listed file" test -f "$HOME/.oh-my-zsh/custom/$p10k/internal/p10k.zsh" -a -f "$HOME/.oh-my-zsh/custom/$p10k/powerlevel10k.zsh-theme"
+t_true "p10k mirror restores the exec bit" test -x "$HOME/.oh-my-zsh/custom/$p10k/gitstatus/install"
+t_no_out "p10k mirror never touches github" 'github\.com/romkatv' calls
+t_no_out "p10k mirror never asks for a branch" 'powerlevel10k@master' calls
+t_no_out "package name is not taken for a file" 'powerlevel10k@[0-9a-f]+romkatv' calls
+fresh; SETUP_MIRROR=jsdelivr STUB_GIT_FAIL='*github.com/ohmyzsh*' install > "$tmp/out" 2>&1
+t_out "omz falls back to gitee" 'REMOTE=https://gitee\.com/mirrors/oh-my-zsh\.git' cat "$SETUP_LOG"
+t_out "fallback is announced" 'trying the gitee mirror\n\s+cloned from gitee\.com/mirrors/oh-my-zsh\s+done' cat "$tmp/out"
+fresh; STUB_GIT_FAIL='*github.com/ohmyzsh*' t_out "omz default mode does not fall back" '\[ 4/10\] oh-my-zsh\n\s+installer\s+FAIL' install
+fresh; printf '<html><body>502 Bad Gateway</body></html>\n' > "$tmp/http/https___data.jsdelivr.com_v1_packages_gh_romkatv_powerlevel10k@deadbeef?structure=flat"
+SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=deadbeef t_exit "bad listing stops the run" 1 install
+t_true "bad listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
+fresh; SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=feedface install >/dev/null 2>&1
+t_true "missing listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
+fresh; mkdir -p "$HOME/.oh-my-zsh/.git" "$HOME/.oh-my-zsh/custom/$p10k"
+t_out "omz and p10k present are skipped" 'oh-my-zsh\n\s+already installed\s+skip\n.*powerlevel10k\n\s+already installed\s+skip' install
+
 t_done setup-macos

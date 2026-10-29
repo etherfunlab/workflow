@@ -20,6 +20,12 @@ APPS_DIR="${SETUP_APPS_DIR:-/Applications}"
 LOG="${SETUP_LOG:-$HOME/.setup-macos/$(date +%Y%m%d-%H%M%S).log}"
 # Its presence makes softwareupdate list the Command Line Tools without a dialog.
 CLT_FLAG="${SETUP_CLT_FLAG:-/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress}"
+# jsDelivr cannot resolve a branch to a commit, so mirror mode pins powerlevel10k
+# here. Bump by hand after checking that master installs from jsDelivr.
+P10K_COMMIT="${SETUP_P10K_COMMIT:-d05a1b00f9a61f9578bf9dc19b8451942dde8734}"
+P10K_CDN=https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k
+P10K_LIST=https://data.jsdelivr.com/v1/packages/gh/romkatv/powerlevel10k
+ZSH_CUSTOM_DIR="$HOME/.oh-my-zsh/custom"
 TOTAL=10
 N_DONE=0 N_SKIP=0 N_ADOPT=0
 KEEPALIVE= WORK= LAST_CMD= LAST_RC=0
@@ -72,9 +78,12 @@ run() {
   return "$LAST_RC"
 }
 
-# say_fail: after an item line marked FAIL, show the end of the log and stop.
+say_notice() { printf '    %s%s%s\n' "$YELLOW" "$1" "$RESET"; }
+
+# say_fail [headline]: after an item line marked FAIL, show the end of the log
+# and stop. The headline defaults to the last command run and its status.
 say_fail() {
-  printf '\n    %s%s exited %s.%s Last lines of the log:\n' "$RED$BOLD" "$LAST_CMD" "$LAST_RC" "$RESET"
+  printf '\n    %s%s%s Last lines of the log:\n' "$RED$BOLD" "${1:-$LAST_CMD exited $LAST_RC.}" "$RESET"
   tail -n 3 "$LOG" | while IFS= read -r line; do printf '    %s│ %s%s\n' "$DIM" "$line" "$RESET"; done
   printf '    Full log: %s\n' "$(tilde "$LOG")"
   printf '    Fix the problem and run the same command again. Finished steps are skipped.\n'
@@ -142,6 +151,59 @@ step_homebrew() {
   eval "$("$BREW_PREFIX/bin/brew" shellenv)"
 }
 
+# omz_install <installer url> [git remote]. The low-speed limit makes a stalled
+# clone fail after 30 s instead of hanging.
+omz_install() {
+  run curl -fsSL -o "$WORK/omz-install.sh" "$1" &&
+    run env ${2:+REMOTE=$2} GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=30 \
+      sh "$WORK/omz-install.sh" --unattended --keep-zshrc
+}
+
+step_omz() {
+  say_banner 4 oh-my-zsh
+  if [ -d "$HOME/.oh-my-zsh/.git" ]; then say_item "already installed" skip; return; fi
+  local t=$SECONDS
+  if [ "$SETUP_MIRROR" != jsdelivr ]; then
+    omz_install https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh || { say_item installer FAIL; say_fail; }
+    say_item "~/.oh-my-zsh" done $((SECONDS - t))
+    return
+  fi
+  if omz_install https://install.ohmyz.sh/; then say_item "~/.oh-my-zsh" done $((SECONDS - t)); return; fi
+  say_notice "github.com timed out or failed, trying the gitee mirror"
+  omz_install https://install.ohmyz.sh/ https://gitee.com/mirrors/oh-my-zsh.git || { say_item installer FAIL; say_fail; }
+  say_item "cloned from gitee.com/mirrors/oh-my-zsh" done $((SECONDS - t))
+}
+
+step_p10k() {
+  say_banner 5 powerlevel10k
+  local dest="$ZSH_CUSTOM_DIR/themes/powerlevel10k" t=$SECONDS
+  if [ -d "$dest" ]; then say_item "already installed" skip; return; fi
+  if [ "$SETUP_MIRROR" != jsdelivr ]; then
+    run git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$dest" || { say_item "git clone" FAIL; say_fail; }
+    say_item "cloned from github.com/romkatv/powerlevel10k" done $((SECONDS - t))
+    return
+  fi
+  # File by file from jsDelivr into a scratch dir; moved into place only when complete.
+  local tmp="$WORK/p10k" names name count=0 f
+  run curl -fsSL -o "$WORK/p10k.json" "$P10K_LIST@$P10K_COMMIT?structure=flat" || { say_item "file list from jsDelivr" FAIL; say_fail; }
+  # Drop everything before "files" so the package's own "name" is not read as a file.
+  names=$(tr -d '\n' < "$WORK/p10k.json" | sed 's/.*"files": *\[//' | tr '}' '\n' | sed -n 's/.*"name": *"\([^"]*\)".*/\1/p')
+  if [ -z "$names" ]; then
+    say_item "file list from jsDelivr" FAIL
+    say_fail "The jsDelivr file list for powerlevel10k@$P10K_COMMIT names no files."
+  fi
+  while IFS= read -r name; do
+    run curl -fsSL --create-dirs -o "$tmp$name" "$P10K_CDN@$P10K_COMMIT$name" || { say_item "$name from jsDelivr" FAIL; say_fail; }
+    count=$((count + 1))
+  done <<< "$names"
+  for f in build install mbuild; do
+    if [ -f "$tmp/gitstatus/$f" ]; then chmod +x "$tmp/gitstatus/$f"; fi
+  done
+  mkdir -p "$(dirname "$dest")"
+  mv "$tmp" "$dest"
+  say_item "$count files from jsDelivr @${P10K_COMMIT:0:7}" done $((SECONDS - t))
+}
+
 main() {
   case "$SETUP_MIRROR" in
     "" | jsdelivr) ;;
@@ -153,6 +215,8 @@ main() {
   step_preflight
   step_clt
   step_homebrew
+  step_omz
+  step_p10k
 }
 
 main "$@"
