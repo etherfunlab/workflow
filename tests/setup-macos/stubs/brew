@@ -17,7 +17,7 @@ fails() {
 }
 case "$cmd" in
   shellenv) echo "export PATH=\"$SETUP_BREW_PREFIX/bin:\$PATH\"" ;;
-  list) grep -qxF "$key" "$STUB_BREW_STATE" ;;
+  list) /usr/bin/grep -qxF "$key" "$STUB_BREW_STATE" ;;
   install)
     if fails; then
       echo "==> Downloading https://example.test/$name.tar.gz"
@@ -25,10 +25,13 @@ case "$cmd" in
       echo "Error: Download failed on Cask $name with message: Download failed" >&2
       exit 1
     fi
-    grep -qxF "$key" "$STUB_BREW_STATE" || echo "$key" >> "$STUB_BREW_STATE"
-    mkdir -p "$SETUP_BREW_PREFIX/bin"; printf "#!/bin/sh\n" > "$SETUP_BREW_PREFIX/bin/$name"; chmod +x "$SETUP_BREW_PREFIX/bin/$name"
+    /usr/bin/grep -qxF "$key" "$STUB_BREW_STATE" || echo "$key" >> "$STUB_BREW_STATE"
+    # Casks only: a fake formula binary (grep) would shadow the real tool on PATH.
+    if [ $kind = cask ]; then
+      mkdir -p "$SETUP_BREW_PREFIX/bin"; printf "#!/bin/sh\n" > "$SETUP_BREW_PREFIX/bin/$name"; chmod +x "$SETUP_BREW_PREFIX/bin/$name"
+    fi
     echo "==> Installing $name" ;;
   uninstall)
-    grep -vxF "$key" "$STUB_BREW_STATE" > "$STUB_BREW_STATE.new"; mv "$STUB_BREW_STATE.new" "$STUB_BREW_STATE"
+    /usr/bin/grep -vxF "$key" "$STUB_BREW_STATE" > "$STUB_BREW_STATE.new"; mv "$STUB_BREW_STATE.new" "$STUB_BREW_STATE"
     rm -f "$SETUP_BREW_PREFIX/bin/$name" ;;
 esac

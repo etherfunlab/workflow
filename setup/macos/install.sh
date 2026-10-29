@@ -29,6 +29,8 @@ ZSH_CUSTOM_DIR="$HOME/.oh-my-zsh/custom"
 TOTAL=10
 N_DONE=0 N_SKIP=0 N_ADOPT=0
 KEEPALIVE= WORK= LAST_CMD= LAST_RC=0
+# Earlier installs for the summary, one "what|where|note" per line.
+EARLIER=
 
 # Output: ANSI 16 colors only, so the person's terminal theme decides the shades.
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -106,6 +108,7 @@ step_preflight() {
   # Keep the sudo timestamp fresh until this script exits.
   (while kill -0 "$$" 2>/dev/null; do sudo -n true; sleep 50; done) >/dev/null 2>&1 &
   KEEPALIVE=$!
+  disown "$KEEPALIVE" # no "Terminated" notice when cleanup kills it
   say_item "macOS $(sw_vers -productVersion), arm64, not root" ok
 }
 
@@ -204,6 +207,97 @@ step_p10k() {
   say_item "$count files from jsDelivr @${P10K_COMMIT:0:7}" done $((SECONDS - t))
 }
 
+brew_formula() {
+  local t=$SECONDS
+  if brew list --formula "$1" >/dev/null 2>&1; then say_item "$1" skip; return; fi
+  run brew install -q "$1" || { say_item "$1" FAIL; say_fail; }
+  say_item "$1" done $((SECONDS - t))
+}
+
+# brew_cask <cask> [App.app] [label]: an app already in APPS_DIR that brew did
+# not install is adopted. Anything else in the way is overwritten on a retry.
+brew_cask() {
+  local cask=$1 app=${2:-} label=${3:-$1} t=$SECONDS adopt= status=done desc
+  desc=$label
+  if brew list --cask "$cask" >/dev/null 2>&1; then say_item "$label" skip; return; fi
+  if [ -n "$app" ] && [ -e "$APPS_DIR/$app" ]; then
+    adopt=--adopt status=adopt
+    desc="$label: $(tilde "$APPS_DIR/$app") was not installed by brew"
+    EARLIER="$EARLIER$label|$(tilde "$APPS_DIR/$app")|now managed by brew"$'\n'
+  fi
+  if ! run brew install -q --cask $adopt "$cask"; then
+    run brew install -q --cask $adopt --force "$cask" || { say_item "$desc" FAIL; say_fail; }
+    say_notice "$cask: an earlier install was in the way, overwrote it"
+  fi
+  say_item "$desc" $status $((SECONDS - t))
+}
+
+# note_earlier <command>: a copy outside Homebrew stays where it is; the brew
+# one comes first on PATH.
+note_earlier() {
+  local p
+  p=$(command -v "$1" 2>/dev/null) || return 0
+  case $p in
+    "$BREW_PREFIX"/*) ;;
+    *) EARLIER="$EARLIER$1|$(tilde "$p")|brew version is first on PATH"$'\n' ;;
+  esac
+}
+
+step_zsh_plugins() {
+  say_banner 6 "zsh plugins"
+  local f
+  for f in zsh-syntax-highlighting zsh-autosuggestions zsh-completions grep; do brew_formula "$f"; done
+  # compaudit rejects group-writable completion dirs; Homebrew leaves share/ group-writable.
+  if [ -d "$BREW_PREFIX/share" ]; then chmod go-w "$BREW_PREFIX/share"; fi
+  if [ -d "$BREW_PREFIX/share/zsh" ]; then chmod -R go-w "$BREW_PREFIX/share/zsh"; fi
+}
+
+step_fonts() {
+  say_banner 7 Fonts
+  if [ -f "$HOME/Library/Fonts/MesloLGS NF Regular.ttf" ]; then
+    say_item "MesloLGS NF already in ~/Library/Fonts" skip
+    return
+  fi
+  brew_cask font-meslo-for-powerlevel10k "" "MesloLGS NF"
+}
+
+step_apps() {
+  say_banner 8 Apps
+  brew_cask iterm2 iTerm.app iTerm2
+  brew_cask visual-studio-code "Visual Studio Code.app" "Visual Studio Code"
+}
+
+step_clis() {
+  say_banner 9 CLIs
+  brew list --cask miniconda >/dev/null 2>&1 || note_earlier conda
+  brew_cask miniconda
+  if brew list --cask claude-code >/dev/null 2>&1; then
+    say_notice "replacing cask claude-code with claude-code@latest"
+    run brew uninstall -q --cask claude-code || { say_item claude-code FAIL; say_fail; }
+  fi
+  brew list --cask claude-code@latest >/dev/null 2>&1 || note_earlier claude
+  brew_cask claude-code@latest
+  brew list --cask codex >/dev/null 2>&1 || note_earlier codex
+  brew_cask codex
+  local t=$SECONDS
+  if [ -x "$HOME/.grok/bin/grok" ]; then
+    say_item grok skip
+  else
+    { run curl -fsSL -o "$WORK/grok-install.sh" https://x.ai/cli/install.sh &&
+      run /bin/bash "$WORK/grok-install.sh"; } || { say_item grok FAIL; say_fail; }
+    say_item "grok, x.ai installer" done $((SECONDS - t))
+  fi
+}
+
+summary() {
+  if [ -n "$EARLIER" ]; then
+    printf '    Earlier installs found on this Mac:\n'
+    printf '%s' "$EARLIER" | while IFS='|' read -r what where note; do
+      printf '      %-10s %-40s %s%s%s\n' "$what" "$where" "$DIM" "$note" "$RESET"
+    done
+  fi
+}
+
 main() {
   case "$SETUP_MIRROR" in
     "" | jsdelivr) ;;
@@ -217,6 +311,11 @@ main() {
   step_homebrew
   step_omz
   step_p10k
+  step_zsh_plugins
+  step_fonts
+  step_apps
+  step_clis
+  summary
 }
 
 main "$@"

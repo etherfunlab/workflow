@@ -59,6 +59,7 @@ SETUP_MIRROR=bogus t_out "unknown mirror says why" 'SETUP_MIRROR must be empty o
 fresh; install > "$tmp/out" 2>&1
 t_true "no color codes when piped" perl -ne '$b = 1 if /==>/; $e = 1 if /\e\[/; END { exit !($b && !$e) }' "$tmp/out"
 fresh; t_out "preflight banner" '==> \[ 1/10\] Preflight\n\s+macOS 27\.0\.1, arm64, not root\s+ok' install
+fresh; t_no_out "no job-control noise from the sudo keepalive" 'Terminated|line [0-9]+:' install
 
 # Command Line Tools and Homebrew.
 fresh; install >/dev/null
@@ -107,5 +108,33 @@ fresh; SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=feedface install >/dev/null 2>&1
 t_true "missing listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
 fresh; mkdir -p "$HOME/.oh-my-zsh/.git" "$HOME/.oh-my-zsh/custom/$p10k"
 t_out "omz and p10k present are skipped" 'oh-my-zsh\n\s+already installed\s+skip\n.*powerlevel10k\n\s+already installed\s+skip' install
+
+# Brew packages, apps and CLIs.
+fresh; install >/dev/null
+for f in zsh-syntax-highlighting zsh-autosuggestions zsh-completions grep; do
+  t_out "formula $f installed" "brew install -q $f\$" calls
+done
+t_true "share dirs lose group write" bash -c '[ "$(stat -f %Sp "$1/share" | cut -c6)" = "-" ]' _ "$SETUP_BREW_PREFIX"
+t_out "font cask installed" 'brew install -q --cask font-meslo-for-powerlevel10k' calls
+t_out "vs code installed" 'brew install -q --cask visual-studio-code' calls
+t_out "grok installer fetched" 'curl .*x\.ai/cli/install\.sh' calls
+fresh; mkdir -p "$HOME/Library/Fonts"; touch "$HOME/Library/Fonts/MesloLGS NF Regular.ttf"
+t_out "font present is skipped" 'MesloLGS NF already in ~/Library/Fonts\s+skip' install
+fresh; mkdir -p "$SETUP_APPS_DIR/iTerm.app"; install > "$tmp/out"
+t_out "dmg-installed app is adopted" 'brew install -q --cask --adopt iterm2' calls
+t_out "adopt shows in output" 'iTerm2.*\s+adopt' cat "$tmp/out"
+fresh; mkdir -p "$SETUP_APPS_DIR/iTerm.app"; STUB_BREW_FAIL=iterm2 STUB_BREW_FORCE_OK=iterm2 install >/dev/null
+t_out "refused adopt retries with force" 'brew install -q --cask --adopt iterm2\n(.*\n)*brew install -q --cask --adopt --force iterm2' calls
+fresh; printf 'cask:claude-code\n' > "$STUB_BREW_STATE"; install >/dev/null
+t_out "conflicting cask replaced" 'brew uninstall -q --cask claude-code\n(.*\n)*brew install -q --cask claude-code@latest' calls
+fresh; mkdir -p "$tmp/npm"; touch "$tmp/npm/codex" "$tmp/npm/conda"; chmod +x "$tmp/npm/codex" "$tmp/npm/conda"
+EXTRA_PATH="$tmp/npm" install > "$tmp/out"
+t_out "npm codex listed as left in place" "codex\s+$tmp/npm/codex\s+brew version is first on PATH" cat "$tmp/out"
+t_out "other conda listed as left in place" "conda\s+$tmp/npm/conda\s+brew version is first on PATH" cat "$tmp/out"
+fresh; STUB_BREW_FAIL=codex t_exit "failed cask stops the run" 1 install
+fresh; STUB_BREW_FAIL=codex t_out "failure shows log tail and path" 'codex\s+FAIL\n\n.*brew install.*exited 1\..*\n(\s+│.*\n){1,3}\s+Full log: .*setup\.log\n\s+Fix the problem and run the same command again' install
+fresh; STUB_BREW_FAIL=codex install >/dev/null 2>&1; : > "$STUB_LOG"; install >/dev/null
+t_out "failed cask retried on rerun" 'brew install -q --cask codex' calls
+t_no_out "finished steps not redone on rerun" 'brew install -q --cask miniconda' calls
 
 t_done setup-macos
