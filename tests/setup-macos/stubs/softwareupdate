@@ -1,0 +1,6 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+case "$1" in
+  -l) printf "Software Update Tool\n\nFinding available software\nSoftware Update found the following new or updated software:\n* Label: Command Line Tools for Xcode-27.0\n\tTitle: Command Line Tools for Xcode, Version: 27.0, Size: 900000K, Recommended: YES,\n" ;;
+  -i) touch "$STUB_CLT" ;;
+esac

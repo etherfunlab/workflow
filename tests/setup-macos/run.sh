@@ -18,4 +18,46 @@ t_out "zshrc sources syntax highlighting last" 'zsh-syntax-highlighting\.zsh\s*$
 t_out "zshrc puts fpath before oh-my-zsh" 'fpath=\(.*\n(.*\n)*source \$ZSH/oh-my-zsh\.sh' cat "$setup/zshrc"
 t_true "zshrc has no supabase line" bash -c 'test -f "$1" && ! grep -q SUPABASE "$1"' _ "$setup/zshrc"
 
+# Harness for install.sh: a temp HOME, stubbed tools first on a PATH without
+# the real Homebrew, and canned HTTP responses. Stubs log every call.
+STUB_DIR="$root/tests/setup-macos/stubs"
+P10K_COMMIT=d05a1b00f9a61f9578bf9dc19b8451942dde8734
+work=$(mktemp -d); trap 'rm -rf "$work"' EXIT
+n=0
+fresh() {
+  n=$((n+1)); tmp="$work/$n"; mkdir -p "$tmp/home" "$tmp/http"
+  cp "$root/tests/setup-macos/http/"* "$tmp/http/"
+  local f
+  for f in zshrc p10k.zsh iterm2-profile.json; do
+    cp "$setup/$f" "$tmp/http/https___raw.githubusercontent.com_etherfunlab_workflow_main_setup_macos_$f"
+    cp "$setup/$f" "$tmp/http/https___cdn.jsdelivr.net_gh_etherfunlab_workflow@main_setup_macos_$f"
+  done
+  unset SETUP_MIRROR SETUP_P10K_COMMIT STUB_ARCH STUB_UID STUB_GIT_FAIL STUB_BREW_FAIL \
+    STUB_BREW_FORCE_OK STUB_ITERM_RUNNING EXTRA_PATH NO_COLOR \
+    HOMEBREW_BREW_GIT_REMOTE HOMEBREW_API_DOMAIN HOMEBREW_BOTTLE_DOMAIN
+  export HOME="$tmp/home" SHELL=/bin/zsh STUB_DIR \
+    SETUP_BREW_PREFIX="$tmp/brew" SETUP_APPS_DIR="$tmp/apps" SETUP_LOG="$tmp/setup.log" \
+    SETUP_CLT_FLAG="$tmp/clt-flag" STUB_CLT="$tmp/clt" STUB_HTTP="$tmp/http" \
+    STUB_LOG="$tmp/calls" STUB_BREW_STATE="$tmp/brew-state"
+  : > "$STUB_LOG"; : > "$STUB_BREW_STATE"
+}
+safe() { # never let install.sh near the real HOME or Homebrew
+  case "$HOME:$SETUP_BREW_PREFIX" in "$work"/*:"$work"/*) ;; *) echo "unsafe test env"; return 99 ;; esac
+}
+# Shadows /usr/bin/install, which this suite never needs.
+install() { safe && PATH="$STUB_DIR:${EXTRA_PATH:+$EXTRA_PATH:}/usr/bin:/bin" bash "$setup/install.sh"; }
+# The way the documented start line runs it: no BASH_SOURCE, templates over curl.
+install_piped() { safe && (cd "$tmp" && PATH="$STUB_DIR:/usr/bin:/bin" bash -c "$(cat "$setup/install.sh")"); }
+calls() { cat "$STUB_LOG"; }
+
+# Preflight.
+fresh; STUB_ARCH=x86_64 t_exit "intel mac exits 1" 1 install
+t_true "intel mac wrote nothing" test ! -e "$HOME/.zshrc" -a ! -e "$SETUP_LOG"
+fresh; STUB_UID=0 t_exit "root exits 1" 1 install
+fresh; SETUP_MIRROR=bogus t_exit "unknown mirror exits 1" 1 install
+SETUP_MIRROR=bogus t_out "unknown mirror says why" 'SETUP_MIRROR must be empty or jsdelivr' install
+fresh; install > "$tmp/out" 2>&1
+t_true "no color codes when piped" perl -ne '$b = 1 if /==>/; $e = 1 if /\e\[/; END { exit !($b && !$e) }' "$tmp/out"
+fresh; t_out "preflight banner" '==> \[ 1/10\] Preflight\n\s+macOS 27\.0\.1, arm64, not root\s+ok' install
+
 t_done setup-macos

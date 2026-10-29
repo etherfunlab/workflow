@@ -1,0 +1,34 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+# Installed names live in $STUB_BREW_STATE, casks as cask:<name>.
+cmd=$1; shift
+kind=formula force=0 name=
+for a in "$@"; do
+  case "$a" in --cask) kind=cask ;; --force) force=1 ;; -*) ;; *) name=$a ;; esac
+done
+key=$name; [ $kind = cask ] && key="cask:$name"
+fails() {
+  for f in ${STUB_BREW_FAIL:-}; do
+    [ "$f" = "$name" ] || continue
+    if [ $force = 1 ]; then for g in ${STUB_BREW_FORCE_OK:-}; do [ "$g" = "$name" ] && return 1; done; fi
+    return 0
+  done
+  return 1
+}
+case "$cmd" in
+  shellenv) echo "export PATH=\"$SETUP_BREW_PREFIX/bin:\$PATH\"" ;;
+  list) grep -qxF "$key" "$STUB_BREW_STATE" ;;
+  install)
+    if fails; then
+      echo "==> Downloading https://example.test/$name.tar.gz"
+      echo "curl: (28) Operation timed out after 300000 milliseconds with 0 bytes received" >&2
+      echo "Error: Download failed on Cask $name with message: Download failed" >&2
+      exit 1
+    fi
+    grep -qxF "$key" "$STUB_BREW_STATE" || echo "$key" >> "$STUB_BREW_STATE"
+    mkdir -p "$SETUP_BREW_PREFIX/bin"; printf "#!/bin/sh\n" > "$SETUP_BREW_PREFIX/bin/$name"; chmod +x "$SETUP_BREW_PREFIX/bin/$name"
+    echo "==> Installing $name" ;;
+  uninstall)
+    grep -vxF "$key" "$STUB_BREW_STATE" > "$STUB_BREW_STATE.new"; mv "$STUB_BREW_STATE.new" "$STUB_BREW_STATE"
+    rm -f "$SETUP_BREW_PREFIX/bin/$name" ;;
+esac

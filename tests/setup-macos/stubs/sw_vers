@@ -1,0 +1,3 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+echo 27.0.1

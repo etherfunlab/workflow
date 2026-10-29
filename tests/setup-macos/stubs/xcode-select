@@ -1,0 +1,4 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+if [ "$1" = -p ] && [ -e "$STUB_CLT" ]; then echo "$STUB_CLT"; exit 0; fi
+exit 2
