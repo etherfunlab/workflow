@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Everything under `setup/` and `tests/` is English; no product names, private repo names, internal URLs, local absolute paths (`/Users/...`), emails or tokens anywhere, commit messages included (AGENTS.md).
+- Everything under `setup/` and `tests/` is English; no product names, private repo names, internal URLs, local absolute paths (anything under a real home directory), emails or tokens anywhere, commit messages included (AGENTS.md).
 - Commits: Conventional Commits, English. One PR for the whole plan; run `tests/run-all.sh` before each commit.
 - `install.sh` runs under `/bin/bash` (bash 3.2) with `set -euo pipefail`; every external command is called by bare name (never `/usr/bin/uname`) so tests can stub it. The only absolute program path is `/bin/bash`; every other path goes through `$BREW_PREFIX`, `$APPS_DIR`, `$HOME` or a `SETUP_*` override.
 - Never run `install.sh` against the real `$HOME`; tests always set `HOME` to a temp dir and run with `PATH=<stubs>:/usr/bin:/bin` only, so the maintainer's real `/opt/homebrew/bin` tools (and real `defaults`) are never reached.
@@ -45,7 +45,7 @@
 
 - [ ] **Step 1: Write the template tests**
 
-`tests/setup-macos/run.sh` starts like every suite (`set -uo pipefail`, `root=`, `. "$root/tests/lib.sh"`), defines `setup="$root/setup/macos"`, and ends with `t_done setup-macos`. Tests:
+`tests/setup-macos/run.sh` starts like every suite (`set -uo pipefail`, `root=`, `. "$root/tests/lib.sh"`), defines `setup="$root/setup/macos"` and `real_home=$HOME` (captured before any test overrides `HOME`; the suite never spells out a home path, because the repo's pre-push denylist rejects one), and ends with `t_done setup-macos`. Tests:
 
 ```bash
 t_exit "zshrc parses" 0 zsh -n "$setup/zshrc"
@@ -53,7 +53,7 @@ t_exit "p10k.zsh parses" 0 zsh -n "$setup/p10k.zsh"
 t_exit "iterm2 profile is JSON" 0 python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$setup/iterm2-profile.json"
 t_out "profile has the fixed guid" '"Guid": *"9B8C7E2A-4F31-4C5D-A6E0-2D7F5B3C9A11"' cat "$setup/iterm2-profile.json"
 t_out "profile names the font" '"Normal Font": *"MesloLGS-NF-Regular 15"' cat "$setup/iterm2-profile.json"
-t_true "no home paths under setup/" bash -c '! grep -rn "/Users/" "$1"' _ "$setup"
+t_true "no home paths under setup/" bash -c '! grep -rnF "$2" "$1"' _ "$setup" "$real_home"
 t_out "zshrc sources syntax highlighting last" 'zsh-syntax-highlighting\.zsh\s*$' tail -n 1 "$setup/zshrc"
 t_out "zshrc puts fpath before oh-my-zsh" 'fpath=\(.*\n(.*\n)*source \$ZSH/oh-my-zsh\.sh' cat "$setup/zshrc"
 t_no_out "zshrc has no supabase line" 'SUPABASE' cat "$setup/zshrc"
@@ -66,11 +66,11 @@ Expected: `setup-macos: 0 passed, 9 failed`
 
 - [ ] **Step 3: Write `setup/macos/zshrc`**
 
-Follow the spec's twelve-item order exactly. Content comes from the maintainer's `~/.zshrc` (read-only): keep the p10k instant-prompt block, `ZSH`, `ZSH_THEME`, `plugins=(git)`, the conda lazy block verbatim, the Homebrew / Claude Code / toolchain exports, `PATH="$HOME/.grok/bin:$PATH"`. Add `fpath=(~/.grok/completions/zsh /opt/homebrew/share/zsh-completions $fpath)` before `source $ZSH/oh-my-zsh.sh`; add `source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh` after the p10k source; move `source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh` to the last line. Replace `/Users/<name>/Library/pnpm` with `$HOME/Library/pnpm`. Drop every commented-out omz option and the Supabase line. Each kept non-obvious line gets one English comment line saying why; no dates.
+Follow the spec's twelve-item order exactly. Content comes from the maintainer's `~/.zshrc` (read-only): keep the p10k instant-prompt block, `ZSH`, `ZSH_THEME`, `plugins=(git)`, the conda lazy block verbatim, the Homebrew / Claude Code / toolchain exports, `PATH="$HOME/.grok/bin:$PATH"`. Add `fpath=(~/.grok/completions/zsh /opt/homebrew/share/zsh-completions $fpath)` before `source $ZSH/oh-my-zsh.sh`; add `source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh` after the p10k source; move `source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh` to the last line. Replace the absolute pnpm path with `$HOME/Library/pnpm`. Drop every commented-out omz option and the Supabase line. Each kept non-obvious line gets one English comment line saying why; no dates.
 
 - [ ] **Step 4: Copy `~/.p10k.zsh` to `setup/macos/p10k.zsh`**
 
-Run: `cp ~/.p10k.zsh setup/macos/p10k.zsh` then `grep -c "/Users/" setup/macos/p10k.zsh` → `0`.
+Run: `cp ~/.p10k.zsh setup/macos/p10k.zsh` then `grep -cF "$HOME" setup/macos/p10k.zsh` → `0`.
 
 - [ ] **Step 5: Generate `setup/macos/iterm2-profile.json` from the plist**
 

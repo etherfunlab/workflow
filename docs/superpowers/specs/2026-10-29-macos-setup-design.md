@@ -182,7 +182,7 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 - 镜像模式下 p10k 的每个请求都指向 `@<P10K_COMMIT>`
 - stdout 不是终端时输出里没有颜色码
 - `zsh -n` 检查 `zshrc` 模板，`bash -n` 检查 `install.sh`
-- `setup/` 下没有 `/Users/` 这类本机绝对路径
+- `setup/` 下不含跑测试那台机器的 `$HOME` 路径
 
 **AGENTS.md 新增**：
 
