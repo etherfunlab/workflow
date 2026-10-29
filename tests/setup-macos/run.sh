@@ -60,4 +60,25 @@ fresh; install > "$tmp/out" 2>&1
 t_true "no color codes when piped" perl -ne '$b = 1 if /==>/; $e = 1 if /\e\[/; END { exit !($b && !$e) }' "$tmp/out"
 fresh; t_out "preflight banner" '==> \[ 1/10\] Preflight\n\s+macOS 27\.0\.1, arm64, not root\s+ok' install
 
+# Command Line Tools and Homebrew.
+fresh; install >/dev/null
+t_out "clt installed headless" 'softwareupdate -i Command Line Tools for Xcode-27\.0' calls
+t_no_out "no gui clt prompt" 'xcode-select --install' calls
+t_true "clt flag cleaned up" test ! -e "$SETUP_CLT_FLAG"
+fresh; touch "$STUB_CLT"
+t_out "clt present is skipped" '\[ 2/10\] Xcode Command Line Tools\n\s+already installed\s+skip' install
+fresh; install >/dev/null
+t_out "default mode uses github installer" 'curl .*raw\.githubusercontent\.com/Homebrew/install/HEAD/install\.sh' calls
+t_no_out "default mode touches no mirror" 'mirrors\.ustc\.edu\.cn' calls
+fresh; SETUP_MIRROR=jsdelivr install >/dev/null
+t_out "mirror mode uses ustc installer" 'curl .*mirrors\.ustc\.edu\.cn/misc/brew-install\.sh' calls
+t_out "mirror mode points brew at ustc" 'HOMEBREW_BREW_GIT_REMOTE=https://mirrors\.ustc\.edu\.cn/brew\.git' cat "$SETUP_LOG"
+fresh; SETUP_MIRROR=jsdelivr HOMEBREW_BOTTLE_DOMAIN=https://example.test/b install >/dev/null
+t_out "preset HOMEBREW var wins" 'HOMEBREW_BOTTLE_DOMAIN=https://example\.test/b' cat "$SETUP_LOG"
+fresh; mkdir -p "$SETUP_BREW_PREFIX/bin"; cp "$STUB_DIR/brew" "$SETUP_BREW_PREFIX/bin/brew"
+t_out "brew present is skipped" '\[ 3/10\] Homebrew\n\s+already installed\s+skip' install
+fresh; rm "$tmp/http/https___raw.githubusercontent.com_Homebrew_install_HEAD_install.sh"
+t_exit "unreachable brew installer stops the run" 1 install
+t_out "stop names the log" 'installer\s+FAIL\n\n.*curl .*exited 22\..*\n(\s+│.*\n){1,3}\s+Full log: .*setup\.log\n\s+Fix the problem and run the same command again' install
+
 t_done setup-macos
