@@ -137,4 +137,55 @@ fresh; STUB_BREW_FAIL=codex install >/dev/null 2>&1; : > "$STUB_LOG"; install >/
 t_out "failed cask retried on rerun" 'brew install -q --cask codex' calls
 t_no_out "finished steps not redone on rerun" 'brew install -q --cask miniconda' calls
 
+# Dotfiles, iTerm2 profile, summary, reruns.
+fresh; install > "$tmp/out"
+t_true "zshrc equals template" cmp -s "$setup/zshrc" "$HOME/.zshrc"
+t_true "p10k equals template" cmp -s "$setup/p10k.zsh" "$HOME/.p10k.zsh"
+t_true "iterm profile installed" cmp -s "$setup/iterm2-profile.json" "$HOME/Library/Application Support/iTerm2/DynamicProfiles/workflow.json"
+t_out "default profile set" 'defaults write com\.googlecode\.iterm2 Default Bookmark Guid -string 9B8C7E2A-4F31-4C5D-A6E0-2D7F5B3C9A11' calls
+t_true "zprofile has one shellenv line" bash -c '[ "$(grep -c "brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
+t_true "default mode writes no mirror block" bash -c 'test -f "$1" && ! grep -q "homebrew mirror" "$1"' _ "$HOME/.zprofile"
+t_out "dotfiles banner" '==> \[10/10\] Dotfiles' cat "$tmp/out"
+t_out "summary counts" '==> Done in \d+m\d\ds\. \d+ installed, \d+ already in place\.' cat "$tmp/out"
+t_out "next steps listed" 'Next:\n\s+1\. Quit Terminal and open iTerm2\.\n\s+2\. claude.*\n\s+3\. codex login.*\n\s+4\. grok.*' cat "$tmp/out"
+: > "$STUB_LOG"; install > "$tmp/out2"
+t_true "second run makes no backup" bash -c '! ls "$1"/.zshrc.backup-* "$1"/.p10k.zsh.backup-* 2>/dev/null' _ "$HOME"
+t_no_out "second run installs nothing" 'brew install|brew uninstall|git clone|softwareupdate -i|defaults write' calls
+t_true "second run keeps one shellenv line" bash -c '[ "$(grep -c "brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
+t_out "second run says everything is in place" ' 0 installed, \d+ already in place' cat "$tmp/out2"
+fresh; printf 'export OLD=1\n' > "$HOME/.zshrc"; install > "$tmp/out"
+t_true "different zshrc is backed up" bash -c 'ls "$1"/.zshrc.backup-* >/dev/null 2>&1' _ "$HOME"
+t_out "backup path appears in summary" 'Backups:\n\s+.*/\.zshrc\.backup-\d{8}-\d{6}' cat "$tmp/out"
+t_true "old content is in the backup" bash -c 'grep -q "export OLD=1" "$1"/.zshrc.backup-*' _ "$HOME"
+t_true "backup taken before installers ran" bash -c 'ls "$1"/.zshrc.backup-* >/dev/null 2>&1 && ! grep -q "grok installer" "$1"/.zshrc.backup-*' _ "$HOME"
+t_true "only one backup per file" bash -c '[ "$(ls "$1"/.zshrc.backup-* | wc -l)" -eq 1 ]' _ "$HOME"
+t_true "installer edits are gone from the final zshrc" cmp -s "$setup/zshrc" "$HOME/.zshrc"
+fresh; install >/dev/null
+t_true "no zshrc before means no backup" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
+fresh; cp "$setup/zshrc" "$HOME/.zshrc"; install >/dev/null
+t_true "identical zshrc is not backed up" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
+fresh; STUB_BREW_FAIL=codex install >/dev/null 2>&1
+t_true "failed run has not touched zshrc yet" test ! -e "$HOME/.zshrc"
+fresh; printf 'eval $(/opt/homebrew/bin/brew shellenv)\n' > "$HOME/.zprofile"; install >/dev/null
+t_true "shellenv line already present with different quoting" bash -c '[ "$(grep -c "brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
+fresh; SETUP_MIRROR=jsdelivr install >/dev/null
+t_out "mirror block written once" '# >>> setup/macos: homebrew mirror >>>\nexport HOMEBREW_BREW_GIT_REMOTE=.*\nexport HOMEBREW_API_DOMAIN=.*\nexport HOMEBREW_BOTTLE_DOMAIN=.*\n# <<< setup/macos: homebrew mirror <<<' cat "$HOME/.zprofile"
+SETUP_MIRROR=jsdelivr install >/dev/null
+t_true "mirror block not duplicated" bash -c '[ "$(grep -c "homebrew mirror >>>" "$1")" = 1 ]' _ "$HOME/.zprofile"
+fresh; SETUP_MIRROR=jsdelivr HOMEBREW_API_DOMAIN=https://example.test/api install >/dev/null
+t_out "mirror block keeps a preset value" 'export HOMEBREW_API_DOMAIN="https://example\.test/api"' cat "$HOME/.zprofile"
+fresh; STUB_ITERM_RUNNING=1 install > "$tmp/out"
+t_no_out "running iTerm2 keeps its default" 'defaults write' calls
+t_out "running iTerm2 is explained" 'iTerm2 is running, not changing its default profile' cat "$tmp/out"
+fresh; SHELL=/bin/bash t_out "non-zsh login shell gets a hint" 'login shell is bash; run: chsh -s /bin/zsh' install
+fresh; printf 'export STRAY=1\n' > "$tmp/zshrc"; install_piped >/dev/null
+t_true "stray zshrc in cwd is not used" cmp -s "$setup/zshrc" "$HOME/.zshrc"
+t_out "piped run fetches templates from github" 'curl .*raw\.githubusercontent\.com/etherfunlab/workflow/main/setup/macos/zshrc' calls
+fresh; SETUP_MIRROR=jsdelivr install_piped >/dev/null
+t_out "mirror run fetches templates from jsDelivr" 'curl .*cdn\.jsdelivr\.net/gh/etherfunlab/workflow@main/setup/macos/zshrc' calls
+t_no_out "mirror run never asks raw.githubusercontent.com for templates" 'raw\.githubusercontent\.com/etherfunlab' calls
+fresh; rm "$tmp/http/https___raw.githubusercontent.com_etherfunlab_workflow_main_setup_macos_p10k.zsh"
+install_piped >/dev/null 2>&1
+t_true "unreachable template stops before installing anything" bash -c '! grep -q "brew-install" "$1"' _ "$STUB_LOG"
+
 t_done setup-macos

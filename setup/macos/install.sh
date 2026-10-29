@@ -15,6 +15,10 @@
 set -euo pipefail
 
 SETUP_MIRROR="${SETUP_MIRROR:-}"
+# Empty under `bash -c "$(curl …)"`; set when run from a clone.
+SCRIPT_SRC="${BASH_SOURCE[0]:-}"
+REPO_RAW=https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos
+REPO_CDN=https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos
 BREW_PREFIX="${SETUP_BREW_PREFIX:-/opt/homebrew}"
 APPS_DIR="${SETUP_APPS_DIR:-/Applications}"
 LOG="${SETUP_LOG:-$HOME/.setup-macos/$(date +%Y%m%d-%H%M%S).log}"
@@ -28,9 +32,9 @@ P10K_LIST=https://data.jsdelivr.com/v1/packages/gh/romkatv/powerlevel10k
 ZSH_CUSTOM_DIR="$HOME/.oh-my-zsh/custom"
 TOTAL=10
 N_DONE=0 N_SKIP=0 N_ADOPT=0
-KEEPALIVE= WORK= LAST_CMD= LAST_RC=0
-# Earlier installs for the summary, one "what|where|note" per line.
-EARLIER=
+KEEPALIVE= WORK= LAST_CMD= LAST_RC=0 START=$SECONDS
+# For the summary: earlier installs as "what|where|note" lines, backup paths as lines.
+EARLIER= BACKUPS=
 
 # Output: ANSI 16 colors only, so the person's terminal theme decides the shades.
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -54,6 +58,8 @@ say_header() {
 # say_banner <n> <title>
 say_banner() { printf '%s==>%s %s[%2d/%d] %s%s\n' "$BLUE$BOLD" "$RESET" "$BOLD" "$1" "$TOTAL" "$2" "$RESET"; }
 
+fmt_secs() { printf '%dm%02ds' $(($1 / 60)) $(($1 % 60)); }
+
 # say_item <description> <ok|done|skip|adopt|FAIL> [seconds]
 say_item() {
   local desc=$1 status=$2 secs=${3:-0} color=
@@ -65,7 +71,7 @@ say_item() {
     FAIL) color=$RED$BOLD ;;
   esac
   if [ "$secs" -ge 5 ]; then
-    printf '    %-62s %s%-5s%s %s%6s%s\n' "$desc" "$color" "$status" "$RESET" "$DIM" "$((secs / 60))m$(printf %02d $((secs % 60)))s" "$RESET"
+    printf '    %-62s %s%-5s%s %s%6s%s\n' "$desc" "$color" "$status" "$RESET" "$DIM" "$(fmt_secs "$secs")" "$RESET"
   else
     printf '    %-62s %s%s%s\n' "$desc" "$color" "$status" "$RESET"
   fi
@@ -110,6 +116,39 @@ step_preflight() {
   KEEPALIVE=$!
   disown "$KEEPALIVE" # no "Terminated" notice when cleanup kills it
   say_item "macOS $(sw_vers -productVersion), arm64, not root" ok
+}
+
+# fetch_template <name>: into $WORK, from beside this script in a clone, else
+# from GitHub or (mirror mode) jsDelivr.
+fetch_template() {
+  local here=
+  [ -z "$SCRIPT_SRC" ] || here="$(dirname "$SCRIPT_SRC")/$1"
+  if [ -n "$here" ] && [ -f "$here" ]; then cp "$here" "$WORK/$1"; return; fi
+  local base=$REPO_RAW
+  [ "$SETUP_MIRROR" != jsdelivr ] || base=$REPO_CDN
+  run curl -fsSL -o "$WORK/$1" "$base/$1"
+}
+
+# backup_if_changed <template> <file>
+backup_if_changed() {
+  [ -f "$2" ] || return 0
+  if cmp -s "$1" "$2"; then return 0; fi
+  local b
+  b="$2.backup-$(date +%Y%m%d-%H%M%S)"
+  cp -p "$2" "$b"
+  BACKUPS="$BACKUPS$(tilde "$b")"$'\n'
+  say_item "backup $(tilde "$2") → $(tilde "$b")" ok
+}
+
+# Runs right after preflight: templates are fetched before anything is
+# installed, and backups are taken before any installer appends to ~/.zshrc.
+prepare_dotfiles() {
+  local f
+  for f in zshrc p10k.zsh iterm2-profile.json; do
+    fetch_template "$f" || { say_item "template $f" FAIL; say_fail; }
+  done
+  backup_if_changed "$WORK/zshrc" "$HOME/.zshrc"
+  backup_if_changed "$WORK/p10k.zsh" "$HOME/.p10k.zsh"
 }
 
 step_clt() {
@@ -289,13 +328,85 @@ step_clis() {
   fi
 }
 
+# place_file <src> <dest> <label>: no backup here; prepare_dotfiles took it.
+place_file() {
+  if [ -f "$2" ] && cmp -s "$1" "$2"; then say_item "$3" skip; return; fi
+  mkdir -p "$(dirname "$2")"
+  cp "$1" "$2"
+  say_item "$3" done
+}
+
+ensure_zprofile() {
+  local f="$HOME/.zprofile" changed= label="~/.zprofile: brew shellenv"
+  touch "$f"
+  if ! grep -q 'brew shellenv' "$f"; then
+    printf '\neval "$(/opt/homebrew/bin/brew shellenv)"\n' >> "$f"
+    changed=1
+  fi
+  if [ "$SETUP_MIRROR" = jsdelivr ]; then
+    label="$label, mirror block"
+    if ! grep -qF '# >>> setup/macos: homebrew mirror >>>' "$f"; then
+      {
+        printf '# >>> setup/macos: homebrew mirror >>>\n'
+        printf 'export HOMEBREW_BREW_GIT_REMOTE="%s"\n' "$HOMEBREW_BREW_GIT_REMOTE"
+        printf 'export HOMEBREW_API_DOMAIN="%s"\n' "$HOMEBREW_API_DOMAIN"
+        printf 'export HOMEBREW_BOTTLE_DOMAIN="%s"\n' "$HOMEBREW_BOTTLE_DOMAIN"
+        printf '# <<< setup/macos: homebrew mirror <<<\n'
+      } >> "$f"
+      changed=1
+    fi
+  fi
+  if [ -n "$changed" ]; then say_item "$label" done; else say_item "$label" skip; fi
+}
+
+# iTerm2 reads "Default Bookmark Guid" at launch, loads dynamic profiles, then
+# makes the guid the default when only a dynamic profile has it, so this also
+# works before iTerm2's first launch.
+install_iterm_profile() {
+  local guid
+  place_file "$WORK/iterm2-profile.json" "$HOME/Library/Application Support/iTerm2/DynamicProfiles/workflow.json" 'iTerm2 profile "workflow"'
+  guid=$(sed -n 's/.*"Guid": *"\([^"]*\)".*/\1/p' "$WORK/iterm2-profile.json")
+  if [ "$(defaults read com.googlecode.iterm2 "Default Bookmark Guid" 2>/dev/null || true)" = "$guid" ]; then
+    say_item 'iTerm2 default profile is "workflow"' skip
+    return
+  fi
+  if pgrep -x iTerm2 >/dev/null 2>&1; then
+    say_notice 'iTerm2 is running, not changing its default profile; pick "workflow" in iTerm2 > Settings > Profiles'
+    return
+  fi
+  run defaults write com.googlecode.iterm2 "Default Bookmark Guid" -string "$guid" || { say_item "iTerm2 default profile" FAIL; say_fail; }
+  say_item 'iTerm2 default profile set to "workflow"' done
+}
+
+step_dotfiles() {
+  say_banner 10 Dotfiles
+  place_file "$WORK/zshrc" "$HOME/.zshrc" "~/.zshrc"
+  place_file "$WORK/p10k.zsh" "$HOME/.p10k.zsh" "~/.p10k.zsh"
+  ensure_zprofile
+  install_iterm_profile
+}
+
 summary() {
+  local shell=${SHELL:-}
+  shell=${shell##*/}
+  printf '%s==>%s %sDone in %s.%s %d installed, %d already in place.\n' "$BLUE$BOLD" "$RESET" "$GREEN$BOLD" \
+    "$(fmt_secs $((SECONDS - START)))" "$RESET" $((N_DONE + N_ADOPT)) "$N_SKIP"
+  if [ -n "$BACKUPS" ]; then
+    printf '    Backups:\n'
+    printf '%s' "$BACKUPS" | while IFS= read -r b; do printf '      %s\n' "$b"; done
+  fi
   if [ -n "$EARLIER" ]; then
     printf '    Earlier installs found on this Mac:\n'
     printf '%s' "$EARLIER" | while IFS='|' read -r what where note; do
       printf '      %-10s %-40s %s%s%s\n' "$what" "$where" "$DIM" "$note" "$RESET"
     done
   fi
+  printf '    Next:\n'
+  printf '      1. Quit Terminal and open iTerm2.\n'
+  printf '      2. claude        sign in when it asks\n'
+  printf '      3. codex login\n'
+  printf '      4. grok          sign in when it asks\n'
+  if [ "$shell" != zsh ]; then printf '      5. Your login shell is %s; run: chsh -s /bin/zsh\n' "$shell"; fi
 }
 
 main() {
@@ -307,6 +418,7 @@ main() {
   WORK=$(mktemp -d)
   say_header
   step_preflight
+  prepare_dotfiles
   step_clt
   step_homebrew
   step_omz
@@ -315,6 +427,7 @@ main() {
   step_fonts
   step_apps
   step_clis
+  step_dotfiles
   summary
 }
 

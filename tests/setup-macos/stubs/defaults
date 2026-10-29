@@ -1,4 +1,8 @@
 #!/bin/sh
 printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
-[ "$1" = read ] && exit 1
-exit 0
+# Remembers writes per test machine so a rerun can read them back.
+f="$STUB_LOG.defaults"
+case "$1" in
+  read) [ -f "$f" ] && /usr/bin/grep -F "$2|$3|" "$f" | tail -n 1 | cut -d'|' -f3 | /usr/bin/grep . || exit 1 ;;
+  write) printf '%s|%s|%s\n' "$2" "$3" "${5:-$4}" >> "$f" ;;
+esac
