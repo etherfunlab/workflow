@@ -149,6 +149,24 @@ EtherFun Lab hat diese Skills für die eigenen Projekte gebaut und legt sie in [
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | Seite bleibt auf dem iPhone hochgeschoben, nachdem die Tastatur geschlossen wurde: erst die Ebene finden, dann reparieren | Teams, die mobile Webseiten bauen |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.en.md) | Mac-Festplatte fast voll: Build-Output und Caches aufräumen, vorher jeweils prüfen, ob das Löschen sicher ist | Entwickler am Mac |
 
+## Umgebung einrichten
+
+[`setup/macos/install.sh`](setup/macos/install.sh) richtet einen Mac mit Apple Silicon so ein, wie EtherFun Lab arbeitet: Xcode Command Line Tools und Homebrew; zsh mit oh-my-zsh, powerlevel10k und den Plugins zsh-syntax-highlighting, zsh-autosuggestions und zsh-completions; iTerm2 mit der Schrift MesloLGS NF und einem Ayu-Mirage-Farbprofil; VS Code, miniconda, Claude Code, Codex und Grok CLI. Es schreibt `~/.zshrc` und `~/.p10k.zsh` aus den Vorlagen daneben, sichert vorhandene Dateien, die davon abweichen, und trägt Homebrew in `~/.zprofile` ein. Apps und CLIs, die auf anderem Weg installiert wurden, übernimmt Homebrew; die Zusammenfassung listet die früheren Installationen, die auf dem Rechner bleiben.
+
+Auf einem neuen Mac im Terminal ausführen:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)"
+```
+
+In langsamen oder gefilterten Netzen den Spiegelmodus verwenden:
+
+```bash
+SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
+```
+
+Er lädt die Dateien dieses Repos über jsDelivr und Homebrew vom USTC-Spiegel, klont oh-my-zsh vom gitee-Spiegel, wenn GitHub scheitert, und installiert powerlevel10k über jsDelivr auf einem festen Commit. Apps, Schriften und CLIs kommen weiterhin von ihren Herstellern. Das Skript fragt einmal nach dem Passwort und hält beim ersten Fehler mit dem Ende seines Logs an; derselbe Befehl macht dort weiter, wo es stehen geblieben ist.
+
 ## Upstream
 
 - [superpowers](https://github.com/obra/superpowers): der Ablauf brainstorming → spec → plan → Umsetzung
@@ -157,6 +175,7 @@ EtherFun Lab hat diese Skills für die eigenen Projekte gebaut und legt sie in [
 - [humanizer](https://github.com/blader/humanizer): Feinschliff für englische Texte
 - [codex CLI](https://github.com/openai/codex): das Modul review
 - [OpenCC](https://github.com/BYVoid/OpenCC): zh-hant-converter
+- [Homebrew](https://brew.sh), [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh), [powerlevel10k](https://github.com/romkatv/powerlevel10k): das Einrichtungsskript
 
 ## Lizenz
 

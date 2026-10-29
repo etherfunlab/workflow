@@ -130,6 +130,24 @@ EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。�
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.zh.md) | iPhone 键盘收起后页面没回来：先分层，再修 | 做移动端网页的团队 |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.zh.md) | Mac 硬盘快满：清编译产物和缓存，每项先确认能删再删 | 在 Mac 上做开发的人 |
 
+## 环境配置脚本
+
+[`setup/macos/install.sh`](setup/macos/install.sh) 把一台 Apple Silicon Mac 配成 EtherFun Lab 的工作环境：Xcode Command Line Tools 和 Homebrew；zsh 配 oh-my-zsh、powerlevel10k，以及 zsh-syntax-highlighting、zsh-autosuggestions、zsh-completions 三个插件；iTerm2 配 MesloLGS NF 字体和 Ayu Mirage 配色；VS Code、miniconda、Claude Code、Codex 和 Grok CLI。`~/.zshrc` 与 `~/.p10k.zsh` 照同目录的模板写入，原有的不一样就先备份；`~/.zprofile` 加上 Homebrew。用别的方式装过的 app 和 CLI 交给 Homebrew 接管，结尾会列出还留在机器上的旧安装。
+
+新 Mac 上打开 Terminal 运行：
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)"
+```
+
+网络慢或受限时用镜像模式：
+
+```bash
+SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
+```
+
+本仓文件从 jsDelivr 拉，Homebrew 走中科大（USTC）镜像，oh-my-zsh 在 GitHub 连不上时改从 gitee 镜像 clone，powerlevel10k 从 jsDelivr 按固定 commit 下载。app、字体和 CLI 仍从各家官方下载。脚本只在开头要一次密码，出错就停在那一步并给出日志末尾；同一条命令重跑，会从停下的地方接着装。
+
 ## 依赖的上游
 
 - [superpowers](https://github.com/obra/superpowers)：brainstorming → spec → plan → 实施的流程
@@ -138,6 +156,7 @@ EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。�
 - [humanizer](https://github.com/blader/humanizer)：英文润色
 - [codex CLI](https://github.com/openai/codex)：review 模块
 - [OpenCC](https://github.com/BYVoid/OpenCC)：zh-hant-converter
+- [Homebrew](https://brew.sh)、[oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)、[powerlevel10k](https://github.com/romkatv/powerlevel10k)：环境配置脚本
 
 ## License
 

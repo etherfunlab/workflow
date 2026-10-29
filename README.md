@@ -184,6 +184,24 @@ EtherFun Lab built these skills for its own projects and keeps them in [`skills/
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone page left pushed up after the keyboard closes: find the layer, then fix it | teams building mobile web pages |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.en.md) | Mac disk nearly full: clear build output and caches, checking each is safe to delete first | developers on a Mac |
 
+## Environment setup
+
+[`setup/macos/install.sh`](setup/macos/install.sh) sets up an Apple Silicon Mac the way EtherFun Lab works: Xcode Command Line Tools and Homebrew; zsh with oh-my-zsh, powerlevel10k and the zsh-syntax-highlighting, zsh-autosuggestions and zsh-completions plugins; iTerm2 with the MesloLGS NF font and an Ayu Mirage color profile; VS Code, miniconda, Claude Code, Codex and Grok CLI. It writes `~/.zshrc` and `~/.p10k.zsh` from the templates beside it, backing up existing ones that differ, and adds Homebrew to `~/.zprofile`. Apps and CLIs installed some other way are taken over by Homebrew, and the summary lists the earlier installs that stay on the machine.
+
+On a new Mac, run this in Terminal:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)"
+```
+
+On a slow or filtered network, use the mirror mode:
+
+```bash
+SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
+```
+
+It fetches this repo's files from jsDelivr and Homebrew from the USTC mirror, clones oh-my-zsh from its gitee mirror when GitHub fails, and installs powerlevel10k from jsDelivr at a pinned commit. Apps, fonts and CLIs still download from their vendors. The script asks for your password once and stops at the first failure with the end of its log; the same command picks up where it stopped.
+
 ## Upstream
 
 - [superpowers](https://github.com/obra/superpowers): the brainstorming → spec → plan → implementation flow
@@ -192,6 +210,7 @@ EtherFun Lab built these skills for its own projects and keeps them in [`skills/
 - [humanizer](https://github.com/blader/humanizer): English polishing
 - [codex CLI](https://github.com/openai/codex): the review module
 - [OpenCC](https://github.com/BYVoid/OpenCC): zh-hant-converter
+- [Homebrew](https://brew.sh), [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh), [powerlevel10k](https://github.com/romkatv/powerlevel10k): the environment setup script
 
 ## License
 
