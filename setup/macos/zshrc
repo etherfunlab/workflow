@@ -1,0 +1,82 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+plugins=(git)
+
+# Extra completion dirs must be on fpath before oh-my-zsh runs compinit;
+# oh-my-zsh regenerates its compdump when fpath changes.
+fpath=(~/.grok/completions/zsh /opt/homebrew/share/zsh-completions $fpath)
+
+source $ZSH/oh-my-zsh.sh
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# >>> conda (lazy) >>>
+# Static equivalent of `conda init` with base auto-activated: same PATH and
+# CONDA_* exports, no python fork at startup. The real shell hook is evaluated
+# on the first `conda` call; with CONDA_SHLVL=1 its trailing `conda activate
+# base` becomes a reactivation, so the env stack stays at depth 1.
+# If `conda init zsh` is ever re-run, delete the block it appends and keep this.
+export _CONDA_ROOT='/opt/homebrew/Caskroom/miniconda/base'
+export CONDA_EXE="$_CONDA_ROOT/bin/conda"
+export _CONDA_EXE="$CONDA_EXE"
+export CONDA_PYTHON_EXE="$_CONDA_ROOT/bin/python"
+export CONDA_PREFIX="$_CONDA_ROOT"
+export CONDA_SHLVL=1
+export CONDA_DEFAULT_ENV=base
+export CONDA_PROMPT_MODIFIER='(base) '
+export _CE_M='' _CE_CONDA=''
+export PATH="$_CONDA_ROOT/bin:$_CONDA_ROOT/condabin:$PATH"
+conda() {
+  unfunction conda
+  eval "$("$CONDA_EXE" shell.zsh hook 2>/dev/null)"
+  conda "$@"
+}
+# <<< conda (lazy) <<<
+
+# Homebrew: no auto-update on every install; prune downloads after 7 days
+# instead of the default 120 so the cache does not balloon.
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_CLEANUP_MAX_AGE_DAYS=7
+
+# GNU grep (brew `grep`) instead of the BSD one.
+alias grep='ggrep'
+
+# Claude Code: keep long-lived connections alive; Bun's TCP socket has no
+# SO_KEEPALIVE, which shows up as "socket connection was closed unexpectedly".
+export CLAUDE_CODE_REMOTE_SEND_KEEPALIVES=true
+export BUN_CONFIG_HTTP_IDLE_TIMEOUT=300
+export BUN_CONFIG_HTTP_RETRY_COUNT=3
+export CLAUDE_STREAM_IDLE_TIMEOUT_MS=120000
+export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--dns-result-order=ipv4first"
+# Claude Code: keep the dedicated Read/Edit/Grep tools instead of bash-first.
+export CLAUDE_CODE_THRIFTY_SONIC=0
+
+# pnpm
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
+
+# PyTorch: fall back to CPU for ops the Apple GPU (MPS) does not implement.
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+
+# Cargo: dev builds keep only line tables, so every target/ stays much smaller.
+export CARGO_PROFILE_DEV_DEBUG=line-tables-only
+
+# Grok CLI. Its completions are on fpath above; oh-my-zsh already ran compinit.
+export PATH="$HOME/.grok/bin:$PATH"
+
+# Must be sourced last: it wraps every widget defined before it.
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
