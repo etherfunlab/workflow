@@ -1,0 +1,49 @@
+# Runs setup/macos/install.sh --no-gui on a GitHub macOS runner (Apple Silicon).
+# Only the no-GUI mode: the runner has no window session, so iTerm2's defaults
+# and the font would not show anything there.
+name: setup-macos
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - setup/macos/**
+      - .github/workflows/setup-macos.yml
+  pull_request:
+    paths:
+      - setup/macos/**
+      - .github/workflows/setup-macos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-gui:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install
+        run: bash setup/macos/install.sh --no-gui
+
+      - name: Rerun installs nothing
+        run: |
+          bash setup/macos/install.sh --no-gui | tee rerun.txt
+          grep -q ' 0 installed, ' rerun.txt
+
+      - name: Interactive zsh starts clean
+        run: |
+          zsh -ic 'echo "theme=$ZSH_THEME"' > zsh.out 2> zsh.err
+          cat zsh.out zsh.err
+          grep -qx 'theme=powerlevel10k/powerlevel10k' zsh.out
+          test ! -s zsh.err
+
+      - name: Upload the install log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-macos-log
+          path: ~/.setup-macos/*.log
+          if-no-files-found: ignore

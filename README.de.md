@@ -167,6 +167,14 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 Er lädt die Dateien dieses Repos über jsDelivr und Homebrew vom USTC-Spiegel, klont oh-my-zsh vom gitee-Spiegel, wenn GitHub scheitert, und installiert powerlevel10k über jsDelivr auf einem festen Commit. Apps, Schriften und CLIs kommen weiterhin von ihren Herstellern. Das Skript fragt einmal nach dem Passwort und hält beim ersten Fehler mit dem Ende seines Logs an; derselbe Befehl macht dort weiter, wo es stehen geblieben ist.
 
+Auf einem Mac ohne Fenstersitzung, oder wenn nur die Kommandozeilenwerkzeuge gewünscht sind, `--no-gui` anhängen: Es überspringt iTerm2, VS Code, die Schrift und das iTerm2-Profil. Das `-` belegt `$0`, damit die Option beim Skript ankommt; es lässt sich mit dem Spiegelmodus kombinieren.
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
+```
+
+Jede Änderung unter `setup/macos/`, die `main` erreicht, läuft in diesem Modus zweimal auf einem macOS-Runner von GitHub: Der zweite Lauf darf nichts installieren.
+
 ## Upstream
 
 - [superpowers](https://github.com/obra/superpowers): der Ablauf brainstorming → spec → plan → Umsetzung

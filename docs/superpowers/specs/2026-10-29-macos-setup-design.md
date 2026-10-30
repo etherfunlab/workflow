@@ -50,7 +50,12 @@
 
 # 弱网：本仓文件走 jsDelivr，Homebrew、omz、p10k 换源
 SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
+
+# 无 GUI：不装 iTerm2、VS Code、字体，不写 iTerm2 profile；可与镜像模式同用
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
 ```
+
+- `--no-gui` 是脚本唯一的参数；`bash -c` 里第一个跟在脚本后面的词是 `$0`，所以一行命令用 `-` 占位。别的参数一律报 `Unknown option` 退出，不动任何文件。
 
 - 用 `bash -c "$(curl …)"` 而不是 `curl | bash`：stdin 留给终端，Homebrew 安装器要 sudo 密码。
 - 新 Mac 有 curl 没有 git，所以入口不能要求先 clone。
@@ -130,6 +135,27 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 - 在已装好的机器上再跑一次：不改任何文件，不产生新备份。
 - 结尾打印下一步：打开 iTerm2、开新 shell、`claude` 登录、`codex login`、`grok` 登录；login shell 不是 zsh 时另加提示。
 
+## 无 GUI 模式
+
+`--no-gui` 给没有图形界面、或只要命令行工具的场景（CI runner、远程登录的 Mac mini）。
+
+- 跳过 Fonts 与 Apps 两步（字体只对图形终端有用），Dotfiles 一步不放 iTerm2 profile、不写 `defaults`；`iterm2-profile.json` 也不下载。
+- 预检不查 `iterm2@beta`、`iterm2@nightly`：这个模式不装 iTerm2，它们不构成冲突。
+- 步数变成 8，横幅按实际跑的步骤连续编号；开头 `mode` 行加 `, no GUI`。
+- 结尾「Next」第一条改为「Open a new terminal window.」。
+- 其余（备份、接管、幂等、镜像）不变。
+
+## CI
+
+`.github/workflows/setup-macos.yml`：`setup/macos/` 下的文件或这个 workflow 推到 `main`、或出现在 PR 里时，在 GitHub 的 Apple Silicon macOS runner 上真跑一遍 `install.sh --no-gui`；也可手动触发。只测无 GUI 模式：runner 没有图形会话，iTerm2 的 `defaults` 与字体在那里验不出什么。
+
+- 第一遍：脚本以 0 退出。
+- 第二遍：输出里是 `0 installed`，即幂等检查在真机上成立。
+- 装完开一个交互 zsh：`ZSH_THEME` 是 `powerlevel10k/powerlevel10k`，stderr 为空（compaudit 的 insecure directories 警告会在这里暴露）。
+- 失败时把 `~/.setup-macos/*.log` 上传为 artifact。
+
+runner 自带 Homebrew、CLT 与免密 sudo，所以这三步会走「已装」分支；真正在 runner 上装的是 omz、p10k、zsh 插件、miniconda、Claude Code、Codex、Grok CLI 和 dotfiles。
+
 ## 已装过的 Mac：接管
 
 组件以别的方式装过时，设计里的安装方式接管，旧安装不卸载：
@@ -168,7 +194,8 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 | `setup/macos/install.sh` | 脚本，bash，注释英文 |
 | `setup/macos/zshrc`、`setup/macos/p10k.zsh`、`setup/macos/iterm2-profile.json` | 模板 |
 | `tests/setup-macos/run.sh` | 测试；`tests/run-all.sh` 自动跑到 |
-| 四份 README 的正文 | 各加一个 `##` 节，放在补充 skills 一节之后：装了什么、两行启动命令、弱网说明 |
+| `.github/workflows/setup-macos.yml` | 真机 CI，见「CI」一节 |
+| 四份 README 的正文 | 各加一个 `##` 节，放在补充 skills 一节之后：装了什么、启动命令（默认、弱网、无 GUI）、弱网说明 |
 | `AGENTS.md` | 维护规则（见下） |
 
 **测试**：用临时 HOME 加 PATH 里的 stub（brew、curl、git、xcode-select、uname、defaults、pgrep 等，stub 只记录调用）跑 `install.sh`，至少覆盖：
@@ -183,6 +210,9 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 - stdout 不是终端时输出里没有颜色码
 - `zsh -n` 检查 `zshrc` 模板，`bash -n` 检查 `install.sh`
 - `setup/` 下不含跑测试那台机器的 `$HOME` 路径
+- `--no-gui`：不装 iTerm2、VS Code、字体，不写 profile 与 `defaults`，不拉 `iterm2-profile.json`，横幅 8 步，已装 `iterm2@beta` 不拦；第二遍 `0 installed`
+- 未知参数退出 1，不建日志、不写文件
+- workflow 文件能被 YAML 解析，触发条件含 `main` 分支与 `setup/macos/**` 路径，跑的是 `install.sh --no-gui`
 
 **AGENTS.md 新增**：
 
