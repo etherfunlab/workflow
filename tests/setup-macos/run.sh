@@ -279,8 +279,11 @@ t_exit "workflow is YAML" 0 ruby -ryaml -e 'YAML.load_file(ARGV[0])' "$wf"
 t_true "workflow triggers on push to main" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit((w["on"] || w[true])["push"]["branches"] == ["main"] ? 0 : 1)' "$wf"
 t_true "workflow watches setup/macos" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit((w["on"] || w[true])["push"]["paths"].include?("setup/macos/**") ? 0 : 1)' "$wf"
 t_true "workflow runs on macOS" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit(w["jobs"].values.all? { |j| j["runs-on"].to_s.start_with?("macos") } ? 0 : 1)' "$wf"
-t_out "workflow runs install.sh --no-gui" 'install\.sh --no-gui' cat "$wf"
-t_no_out "workflow never runs the GUI mode" '^\s+run: .*install\.sh\s*$' cat "$wf"
+wf_runs() { ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); puts w["jobs"].values.flat_map { |j| j["steps"] }.map { |s| s["run"] }.compact.join("\n")' "$wf"; }
+# Every install.sh invocation in a run: block, and there is at least one, passes --no-gui.
+wf_gui_free() { local l; l=$(wf_runs | grep 'install\.sh') && [ -n "$l" ] && ! printf '%s\n' "$l" | grep -qv -- '--no-gui'; }
+t_out "workflow runs install.sh --no-gui" '^\s*bash setup/macos/install\.sh --no-gui' wf_runs
+t_true "workflow never runs the GUI mode" wf_gui_free
 fresh; rm "$tmp/http/https___raw.githubusercontent.com_etherfunlab_workflow_main_setup_macos_p10k.zsh"
 t_exit "unreachable template exits 1" 1 install_piped
 t_out "unreachable template is named" 'template p10k\.zsh\s+FAIL' install_piped
