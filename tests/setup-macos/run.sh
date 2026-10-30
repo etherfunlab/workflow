@@ -51,9 +51,9 @@ safe() { # never let install.sh near the real HOME, Homebrew, /tmp or /Applicati
   done
 }
 # Shadows /usr/bin/install, which this suite never needs.
-install() { safe && PATH="$STUB_DIR:${EXTRA_PATH:+$EXTRA_PATH:}/usr/bin:/bin" bash "$setup/install.sh"; }
+install() { safe && PATH="$STUB_DIR:${EXTRA_PATH:+$EXTRA_PATH:}/usr/bin:/bin" bash "$setup/install.sh" "$@"; }
 # The way the documented start line runs it: no BASH_SOURCE, templates over curl.
-install_piped() { safe && (cd "$tmp" && PATH="$STUB_DIR:/usr/bin:/bin" bash -c "$(cat "$setup/install.sh")"); }
+install_piped() { safe && (cd "$tmp" && PATH="$STUB_DIR:/usr/bin:/bin" bash -c "$(cat "$setup/install.sh")" - "$@"); }
 calls() { cat "$STUB_LOG"; }
 
 # Preflight.
@@ -243,6 +243,47 @@ t_out "piped run fetches templates from github" 'curl .*raw\.githubusercontent\.
 fresh; SETUP_MIRROR=jsdelivr install_piped >/dev/null
 t_out "mirror run fetches templates from jsDelivr" 'curl .*cdn\.jsdelivr\.net/gh/etherfunlab/workflow@main/setup/macos/zshrc' calls
 t_no_out "mirror run never asks raw.githubusercontent.com for templates" 'raw\.githubusercontent\.com/etherfunlab' calls
+
+# --no-gui: no iTerm2, VS Code, font or iTerm2 profile; everything else as before.
+fresh; t_exit "unknown option exits 1" 1 install --bogus
+t_out "unknown option says which" 'Unknown option: --bogus' install --bogus
+t_true "unknown option wrote nothing" test ! -e "$HOME/.zshrc" -a ! -e "$SETUP_LOG"
+fresh; install --no-gui > "$tmp/out"
+t_true "no-gui exits 0" bash -c 'grep -q "==> Done" "$1"' _ "$tmp/out"
+t_no_out "no-gui installs no GUI cask" 'brew install .*(iterm2|visual-studio-code|font-)' calls
+t_out "no-gui still installs the CLIs" 'brew install -q --cask miniconda\n(.*\n)*brew install -q --cask claude-code@latest\n(.*\n)*brew install -q --cask codex' calls
+t_true "no-gui writes no iTerm2 profile" test ! -e "$HOME/Library/Application Support/iTerm2"
+t_no_out "no-gui leaves iTerm2 defaults alone" 'defaults write' calls
+t_out "no-gui header says so" 'mode  default, no GUI' cat "$tmp/out"
+t_out "no-gui counts eight steps" '==> \[ 1/8\] Preflight\n(.*\n)*==> \[ 8/8\] Dotfiles' cat "$tmp/out"
+t_no_out "no-gui has no Fonts or Apps banner" '==> \[ ?\d/8\] (Fonts|Apps)' cat "$tmp/out"
+t_out "no-gui next steps open a terminal, not iTerm2" 'Next:\n\s+1\. Open a new terminal window\.\n\s+2\. claude' cat "$tmp/out"
+t_no_out "no-gui next steps do not mention iTerm2" 'Next:(.*\n)*.*iTerm2' cat "$tmp/out"
+t_true "no-gui zshrc equals template" cmp -s "$setup/zshrc" "$HOME/.zshrc"
+: > "$STUB_LOG"; install --no-gui > "$tmp/out2"
+t_no_out "no-gui second run installs nothing" 'brew install|brew uninstall|git clone|softwareupdate -i|defaults write' calls
+t_out "no-gui second run says everything is in place" ' 0 installed, \d+ already in place' cat "$tmp/out2"
+fresh; SETUP_MIRROR=jsdelivr install --no-gui > "$tmp/out"
+t_out "no-gui mirror header names both" 'mode  mirror: jsDelivr \+ Homebrew mirror, no GUI' cat "$tmp/out"
+fresh; install_piped --no-gui >/dev/null
+t_no_out "no-gui does not fetch the iTerm2 profile" 'curl .*iterm2-profile\.json' calls
+t_out "no-gui piped run still fetches zshrc" 'curl .*setup/macos/zshrc' calls
+fresh; mkdir -p "$SETUP_BREW_PREFIX/bin"; cp "$STUB_DIR/brew" "$SETUP_BREW_PREFIX/bin/brew"; printf 'cask:iterm2@beta\n' > "$STUB_BREW_STATE"
+t_exit "no-gui ignores an iterm2@beta install" 0 install --no-gui
+fresh; mkdir -p "$SETUP_BREW_PREFIX/bin"; cp "$STUB_DIR/brew" "$SETUP_BREW_PREFIX/bin/brew"; printf 'cask:iterm2@beta\n' > "$STUB_BREW_STATE"
+t_exit "default mode still stops on iterm2@beta" 1 install
+
+# CI: the workflow runs install.sh --no-gui on a macOS runner.
+wf="$root/.github/workflows/setup-macos.yml"
+t_exit "workflow is YAML" 0 ruby -ryaml -e 'YAML.load_file(ARGV[0])' "$wf"
+t_true "workflow triggers on push to main" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit((w["on"] || w[true])["push"]["branches"] == ["main"] ? 0 : 1)' "$wf"
+t_true "workflow watches setup/macos" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit((w["on"] || w[true])["push"]["paths"].include?("setup/macos/**") ? 0 : 1)' "$wf"
+t_true "workflow runs on macOS" ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); exit(w["jobs"].values.all? { |j| j["runs-on"].to_s.start_with?("macos") } ? 0 : 1)' "$wf"
+wf_runs() { ruby -ryaml -e 'w = YAML.load_file(ARGV[0]); puts w["jobs"].values.flat_map { |j| j["steps"] }.map { |s| s["run"] }.compact.join("\n")' "$wf"; }
+# Every install.sh invocation in a run: block, and there is at least one, passes --no-gui.
+wf_gui_free() { local l; l=$(wf_runs | grep 'install\.sh') && [ -n "$l" ] && ! printf '%s\n' "$l" | grep -qv -- '--no-gui'; }
+t_out "workflow runs install.sh --no-gui" '^\s*bash setup/macos/install\.sh --no-gui' wf_runs
+t_true "workflow never runs the GUI mode" wf_gui_free
 fresh; rm "$tmp/http/https___raw.githubusercontent.com_etherfunlab_workflow_main_setup_macos_p10k.zsh"
 t_exit "unreachable template exits 1" 1 install_piped
 t_out "unreachable template is named" 'template p10k\.zsh\s+FAIL' install_piped

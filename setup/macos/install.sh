@@ -11,10 +11,16 @@
 #
 #   SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
 #
+# No GUI: skips iTerm2, VS Code, the font and the iTerm2 profile. The "-" fills
+# $0 so that --no-gui reaches the script.
+#
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
+#
 # Asks for the sudo password once. Safe to rerun: finished steps are skipped.
 set -eEuo pipefail
 
 SETUP_MIRROR="${SETUP_MIRROR:-}"
+NO_GUI=
 # Empty under `bash -c "$(curl …)"`; set when run from a clone.
 SCRIPT_SRC="${BASH_SOURCE[0]:-}"
 REPO_RAW=https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos
@@ -30,7 +36,7 @@ P10K_COMMIT="${SETUP_P10K_COMMIT:-d05a1b00f9a61f9578bf9dc19b8451942dde8734}"
 P10K_CDN=https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k
 P10K_LIST=https://data.jsdelivr.com/v1/packages/gh/romkatv/powerlevel10k
 ZSH_CUSTOM_DIR="$HOME/.oh-my-zsh/custom"
-TOTAL=10
+TOTAL=10 STEP=0
 N_DONE=0 N_SKIP=0 N_ADOPT=0
 KEEPALIVE= WORK= LAST_CMD= LAST_RC=0 START=$SECONDS
 # For the summary: earlier installs as "what|where|note" lines, backup paths as lines.
@@ -50,13 +56,17 @@ die() { printf '    %s%s%s\n' "$RED$BOLD" "$1" "$RESET" >&2; exit 1; }
 say_header() {
   local mode=default
   [ "$SETUP_MIRROR" = jsdelivr ] && mode="mirror: jsDelivr + Homebrew mirror"
+  [ -z "$NO_GUI" ] || mode="$mode, no GUI"
   printf '%s==>%s %smacOS setup%s  %setherfunlab/workflow%s\n' "$BLUE$BOLD" "$RESET" "$BOLD" "$RESET" "$DIM" "$RESET"
   printf '    mode  %s\n' "$mode"
   printf '    log   %s\n' "$(tilde "$LOG")"
 }
 
-# say_banner <n> <title>
-say_banner() { printf '%s==>%s %s[%2d/%d] %s%s\n' "$BLUE$BOLD" "$RESET" "$BOLD" "$1" "$TOTAL" "$2" "$RESET"; }
+# say_banner <title>: numbers the steps in the order they run.
+say_banner() {
+  STEP=$((STEP + 1))
+  printf '%s==>%s %s[%2d/%d] %s%s\n' "$BLUE$BOLD" "$RESET" "$BOLD" "$STEP" "$TOTAL" "$1" "$RESET"
+}
 
 fmt_secs() { printf '%dm%02ds' $(($1 / 60)) $(($1 % 60)); }
 
@@ -111,7 +121,7 @@ cleanup() {
 }
 
 step_preflight() {
-  say_banner 1 Preflight
+  say_banner Preflight
   [ "$(uname -s)" = Darwin ] || die "This script is for macOS."
   [ "$(uname -m)" = arm64 ] || die "This script needs an Apple Silicon Mac (arm64)."
   [ "$(id -u)" != 0 ] || die "Run this as your own user, not root; it asks for sudo when it needs it."
@@ -129,8 +139,9 @@ step_preflight() {
 # not, and removing the conflicting one would take the person's data with it.
 check_cask_conflicts() {
   [ -x "$BREW_PREFIX/bin/brew" ] || return 0
-  local pair c
-  for pair in miniforge:miniconda iterm2@beta:iterm2 iterm2@nightly:iterm2; do
+  local pairs=miniforge:miniconda pair c
+  [ -n "$NO_GUI" ] || pairs="$pairs iterm2@beta:iterm2 iterm2@nightly:iterm2"
+  for pair in $pairs; do
     c=${pair%%:*}
     if "$BREW_PREFIX/bin/brew" list --cask "$c" >/dev/null 2>&1; then
       die "Cask $c is installed and conflicts with ${pair#*:}, which this script installs. Decide what to keep, then run it again."
@@ -172,8 +183,9 @@ backup_if_changed() {
 # Runs right after preflight: templates are fetched before anything is
 # installed, and backups are taken before any installer appends to ~/.zshrc.
 prepare_dotfiles() {
-  local f
-  for f in zshrc p10k.zsh iterm2-profile.json; do
+  local f files="zshrc p10k.zsh"
+  [ -n "$NO_GUI" ] || files="$files iterm2-profile.json"
+  for f in $files; do
     fetch_template "$f" || { say_item "template $f" FAIL; say_fail; }
   done
   backup_if_changed "$WORK/zshrc" "$HOME/.zshrc"
@@ -181,7 +193,7 @@ prepare_dotfiles() {
 }
 
 step_clt() {
-  say_banner 2 "Xcode Command Line Tools"
+  say_banner "Xcode Command Line Tools"
   if xcode-select -p >/dev/null 2>&1; then say_item "already installed" skip; return; fi
   local label t=$SECONDS
   touch "$CLT_FLAG"
@@ -211,7 +223,7 @@ brew_env() {
 }
 
 step_homebrew() {
-  say_banner 3 Homebrew
+  say_banner Homebrew
   brew_env
   if [ -x "$BREW_PREFIX/bin/brew" ]; then
     say_item "already installed" skip
@@ -235,7 +247,7 @@ omz_install() {
 }
 
 step_omz() {
-  say_banner 4 oh-my-zsh
+  say_banner oh-my-zsh
   if [ -f "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]; then say_item "already installed" skip; return; fi
   [ ! -e "$HOME/.oh-my-zsh" ] || move_aside "$HOME/.oh-my-zsh" "~/.oh-my-zsh"
   local t=$SECONDS
@@ -251,7 +263,7 @@ step_omz() {
 }
 
 step_p10k() {
-  say_banner 5 powerlevel10k
+  say_banner powerlevel10k
   local dest="$ZSH_CUSTOM_DIR/themes/powerlevel10k" t=$SECONDS
   if [ -f "$dest/powerlevel10k.zsh-theme" ]; then say_item "already installed" skip; return; fi
   [ ! -e "$dest" ] || move_aside "$dest" "powerlevel10k"
@@ -344,7 +356,7 @@ note_earlier() {
 }
 
 step_zsh_plugins() {
-  say_banner 6 "zsh plugins"
+  say_banner "zsh plugins"
   local f
   for f in zsh-syntax-highlighting zsh-autosuggestions zsh-completions grep; do brew_formula "$f"; done
   # compaudit rejects group-writable completion dirs; Homebrew leaves share/ group-writable.
@@ -353,7 +365,7 @@ step_zsh_plugins() {
 }
 
 step_fonts() {
-  say_banner 7 Fonts
+  say_banner Fonts
   if [ -f "$HOME/Library/Fonts/MesloLGS NF Regular.ttf" ]; then
     say_item "MesloLGS NF already in ~/Library/Fonts" skip
     return
@@ -362,13 +374,13 @@ step_fonts() {
 }
 
 step_apps() {
-  say_banner 8 Apps
+  say_banner Apps
   brew_cask iterm2 iTerm.app iTerm2
   brew_cask visual-studio-code "Visual Studio Code.app" "Visual Studio Code" code
 }
 
 step_clis() {
-  say_banner 9 CLIs
+  say_banner CLIs
   brew list --cask miniconda >/dev/null 2>&1 || note_earlier conda
   brew_cask miniconda "" miniconda conda
   if brew list --cask claude-code >/dev/null 2>&1; then
@@ -445,11 +457,11 @@ install_iterm_profile() {
 }
 
 step_dotfiles() {
-  say_banner 10 Dotfiles
+  say_banner Dotfiles
   place_file "$WORK/zshrc" "$HOME/.zshrc" "~/.zshrc"
   place_file "$WORK/p10k.zsh" "$HOME/.p10k.zsh" "~/.p10k.zsh"
   ensure_zprofile
-  install_iterm_profile
+  [ -n "$NO_GUI" ] || install_iterm_profile
 }
 
 summary() {
@@ -468,7 +480,7 @@ summary() {
     done
   fi
   printf '    Next:\n'
-  printf '      1. Quit Terminal and open iTerm2.\n'
+  if [ -n "$NO_GUI" ]; then printf '      1. Open a new terminal window.\n'; else printf '      1. Quit Terminal and open iTerm2.\n'; fi
   printf '      2. claude        sign in when it asks\n'
   printf '      3. codex login\n'
   printf '      4. grok          sign in when it asks\n'
@@ -476,6 +488,13 @@ summary() {
 }
 
 main() {
+  local a
+  for a in "$@"; do
+    case $a in
+      --no-gui) NO_GUI=1 TOTAL=8 ;;
+      *) printf 'Unknown option: %s\nUsage: install.sh [--no-gui]\n' "$a" >&2; exit 1 ;;
+    esac
+  done
   case "$SETUP_MIRROR" in
     "" | jsdelivr) ;;
     *) echo "SETUP_MIRROR must be empty or jsdelivr, got: $SETUP_MIRROR" >&2; exit 1 ;;
@@ -491,8 +510,10 @@ main() {
   step_omz
   step_p10k
   step_zsh_plugins
-  step_fonts
-  step_apps
+  if [ -z "$NO_GUI" ]; then
+    step_fonts
+    step_apps
+  fi
   step_clis
   step_dotfiles
   summary

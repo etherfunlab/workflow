@@ -202,6 +202,14 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 It fetches this repo's files from jsDelivr and Homebrew from the USTC mirror, clones oh-my-zsh from its gitee mirror when GitHub fails, and installs powerlevel10k from jsDelivr at a pinned commit. Apps, fonts and CLIs still download from their vendors. The script asks for your password once and stops at the first failure with the end of its log; the same command picks up where it stopped.
 
+On a Mac without a window session, or when only the command-line tools are wanted, add `--no-gui`: it skips iTerm2, VS Code, the font and the iTerm2 profile. The `-` fills `$0` so that the option reaches the script; it combines with the mirror mode.
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
+```
+
+Every change under `setup/macos/` that reaches `main` runs this mode on a GitHub macOS runner, twice: the second run must install nothing.
+
 ## Upstream
 
 - [superpowers](https://github.com/obra/superpowers): the brainstorming → spec → plan → implementation flow

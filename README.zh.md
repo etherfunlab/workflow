@@ -148,6 +148,14 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 本仓文件从 jsDelivr 拉，Homebrew 走中科大（USTC）镜像，oh-my-zsh 在 GitHub 连不上时改从 gitee 镜像 clone，powerlevel10k 从 jsDelivr 按固定 commit 下载。app、字体和 CLI 仍从各家官方下载。脚本只在开头要一次密码，出错就停在那一步并给出日志末尾；同一条命令重跑，会从停下的地方接着装。
 
+没有图形界面的 Mac，或只要命令行工具时，加 `--no-gui`：不装 iTerm2、VS Code 和字体，也不写 iTerm2 profile。中间的 `-` 占住 `$0`，参数才能传到脚本；可与镜像模式同用。
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
+```
+
+`setup/macos/` 下的改动进了 `main`，就在 GitHub 的 macOS runner 上用这个模式真跑两遍：第二遍必须什么都不装。
+
 ## 依赖的上游
 
 - [superpowers](https://github.com/obra/superpowers)：brainstorming → spec → plan → 实施的流程

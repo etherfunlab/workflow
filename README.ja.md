@@ -169,6 +169,14 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 この repo の file は jsDelivr から、Homebrew は中国科学技術大学（USTC）の mirror から取得し、oh-my-zsh は GitHub に繋がらないとき gitee の mirror から clone し、powerlevel10k は jsDelivr から固定した commit で導入します。app・font・CLI は従来どおり各提供元から取得します。script は最初に一度だけ password を尋ね、失敗した段階で log の末尾を示して止まります。同じ command を再実行すれば、止まったところから続けます。
 
+画面のない Mac や、command line の道具だけで足りる場合は `--no-gui` を付けます。iTerm2・VS Code・font と iTerm2 の profile を飛ばします。途中の `-` が `$0` を埋めるので、option が script まで届きます。mirror 方式と併用できます。
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
+```
+
+`setup/macos/` 配下の変更が `main` に入ると、GitHub の macOS runner でこの方式を二度実行します。二度目は何も導入しないことが条件です。
+
 ## 依存する上流
 
 - [superpowers](https://github.com/obra/superpowers)：brainstorming → spec → plan → 実装の流れ
