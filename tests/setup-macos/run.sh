@@ -33,7 +33,7 @@ fresh() {
     cp "$setup/$f" "$tmp/http/https___cdn.jsdelivr.net_gh_etherfunlab_workflow@main_setup_macos_$f"
   done
   unset SETUP_MIRROR SETUP_P10K_COMMIT STUB_ARCH STUB_UID STUB_GIT_FAIL STUB_BREW_FAIL \
-    STUB_BREW_FORCE_OK STUB_ITERM_RUNNING EXTRA_PATH NO_COLOR \
+    STUB_ITERM_RUNNING EXTRA_PATH NO_COLOR ZDOTDIR HOMEBREW_GITHUB_API_TOKEN \
     HOMEBREW_BREW_GIT_REMOTE HOMEBREW_API_DOMAIN HOMEBREW_BOTTLE_DOMAIN
   export HOME="$tmp/home" SHELL=/bin/zsh STUB_DIR \
     SETUP_BREW_PREFIX="$tmp/brew" SETUP_APPS_DIR="$tmp/apps" SETUP_LOG="$tmp/setup.log" \
@@ -41,8 +41,14 @@ fresh() {
     STUB_LOG="$tmp/calls" STUB_BREW_STATE="$tmp/brew-state"
   : > "$STUB_LOG"; : > "$STUB_BREW_STATE"
 }
-safe() { # never let install.sh near the real HOME or Homebrew
-  case "$HOME:$SETUP_BREW_PREFIX" in "$work"/*:"$work"/*) ;; *) echo "unsafe test env"; return 99 ;; esac
+safe() { # never let install.sh near the real HOME, Homebrew, /tmp or /Applications
+  case "$HOME:$SETUP_BREW_PREFIX:$SETUP_CLT_FLAG:$SETUP_APPS_DIR" in
+    "$work"/*:"$work"/*:"$work"/*:"$work"/*) ;; *) echo "unsafe test env"; return 99 ;;
+  esac
+  local s
+  for s in uname sw_vers id sudo xcode-select softwareupdate curl git brew defaults pgrep; do
+    [ -x "$STUB_DIR/$s" ] || { echo "stub missing: $s"; return 99; }
+  done
 }
 # Shadows /usr/bin/install, which this suite never needs.
 install() { safe && PATH="$STUB_DIR:${EXTRA_PATH:+$EXTRA_PATH:}/usr/bin:/bin" bash "$setup/install.sh"; }
@@ -60,10 +66,17 @@ fresh; install > "$tmp/out" 2>&1
 t_true "no color codes when piped" perl -ne '$b = 1 if /==>/; $e = 1 if /\e\[/; END { exit !($b && !$e) }' "$tmp/out"
 fresh; t_out "preflight banner" '==> \[ 1/10\] Preflight\n\s+macOS 27\.0\.1, arm64, not root\s+ok' install
 fresh; t_no_out "no job-control noise from the sudo keepalive" 'Terminated|line [0-9]+:' install
+t_exit "install.sh parses" 0 bash -n "$setup/install.sh"
+fresh; mkdir -p "$SETUP_BREW_PREFIX/bin"; cp "$STUB_DIR/brew" "$SETUP_BREW_PREFIX/bin/brew"; printf 'cask:miniforge\n' > "$STUB_BREW_STATE"
+t_exit "brew miniforge stops the run before anything is installed" 1 install
+t_out "miniforge stop says why" 'miniforge.*conflicts with.*miniconda' install
+t_true "miniforge stop touched nothing" bash -c '! grep -qE "brew install|softwareupdate -i" "$1" && ! test -e "$2/.zshrc"' _ "$STUB_LOG" "$HOME"
 
 # Command Line Tools and Homebrew.
 fresh; install >/dev/null
-t_out "clt installed headless" 'softwareupdate -i Command Line Tools for Xcode-27\.0' calls
+t_out "clt installed headless, highest version" 'softwareupdate -i Command Line Tools for Xcode 27\.0-27\.0\.1$' calls
+t_no_out "clt beta is not picked" 'softwareupdate -i .*beta' calls
+t_true "softwareupdate listing is in the log" grep -q "Command Line Tools for Xcode 27.0-27.0.1" "$SETUP_LOG"
 t_no_out "no gui clt prompt" 'xcode-select --install' calls
 t_true "clt flag cleaned up" test ! -e "$SETUP_CLT_FLAG"
 fresh; touch "$STUB_CLT"
@@ -81,6 +94,9 @@ t_out "brew present is skipped" '\[ 3/10\] Homebrew\n\s+already installed\s+skip
 fresh; rm "$tmp/http/https___raw.githubusercontent.com_Homebrew_install_HEAD_install.sh"
 t_exit "unreachable brew installer stops the run" 1 install
 t_out "stop names the log" 'installer\s+FAIL\n\n.*curl .*exited 22\..*\n(\s+│.*\n){1,3}\s+Full log: .*setup\.log\n\s+Fix the problem and run the same command again' install
+fresh; HOMEBREW_GITHUB_API_TOKEN=ghp_secret123 SETUP_MIRROR=jsdelivr install >/dev/null
+t_true "tokens never reach the log" bash -c '! grep -q ghp_secret123 "$1"' _ "$SETUP_LOG"
+t_true "log is private" bash -c '[ "$(stat -f %Lp "$1")" = 600 ]' _ "$SETUP_LOG"
 
 # oh-my-zsh and powerlevel10k.
 p10k="themes/powerlevel10k"
@@ -106,8 +122,16 @@ SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=deadbeef t_exit "bad listing stops the r
 t_true "bad listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
 fresh; SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=feedface install >/dev/null 2>&1
 t_true "missing listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
-fresh; mkdir -p "$HOME/.oh-my-zsh/.git" "$HOME/.oh-my-zsh/custom/$p10k"
+fresh; mkdir -p "$HOME/.oh-my-zsh/.git" "$HOME/.oh-my-zsh/custom/$p10k"; touch "$HOME/.oh-my-zsh/oh-my-zsh.sh" "$HOME/.oh-my-zsh/custom/$p10k/powerlevel10k.zsh-theme"
 t_out "omz and p10k present are skipped" 'oh-my-zsh\n\s+already installed\s+skip\n.*powerlevel10k\n\s+already installed\s+skip' install
+fresh; mkdir -p "$HOME/.oh-my-zsh/.git"; install > "$tmp/out"
+t_true "interrupted omz clone is reinstalled" test -f "$HOME/.oh-my-zsh/oh-my-zsh.sh"
+t_out "broken omz dir is moved aside and listed" 'Backups:\n(.*\n)*\s+~/\.oh-my-zsh\.backup-\d{8}-\d{6}' cat "$tmp/out"
+fresh; mkdir -p "$HOME/.oh-my-zsh/custom/$p10k"; install >/dev/null
+t_true "empty p10k dir is reinstalled" test -f "$HOME/.oh-my-zsh/custom/$p10k/powerlevel10k.zsh-theme"
+fresh; ZDOTDIR="$tmp/zdot" install >/dev/null
+t_true "omz lands in ~/.oh-my-zsh despite ZDOTDIR" test -f "$HOME/.oh-my-zsh/oh-my-zsh.sh"
+t_true "omz is not installed under ZDOTDIR" test ! -e "$tmp/zdot/ohmyzsh"
 
 # Brew packages, apps and CLIs.
 fresh; install >/dev/null
@@ -123,8 +147,14 @@ t_out "font present is skipped" 'MesloLGS NF already in ~/Library/Fonts\s+skip' 
 fresh; mkdir -p "$SETUP_APPS_DIR/iTerm.app"; install > "$tmp/out"
 t_out "dmg-installed app is adopted" 'brew install -q --cask --adopt iterm2' calls
 t_out "adopt shows in output" 'iTerm2.*\s+adopt' cat "$tmp/out"
-fresh; mkdir -p "$SETUP_APPS_DIR/iTerm.app"; STUB_BREW_FAIL=iterm2 STUB_BREW_FORCE_OK=iterm2 install >/dev/null
-t_out "refused adopt retries with force" 'brew install -q --cask --adopt iterm2\n(.*\n)*brew install -q --cask --adopt --force iterm2' calls
+fresh; mkdir -p "$SETUP_APPS_DIR/iTerm.app"; STUB_BREW_FAIL=iterm2 install > "$tmp/out" 2>&1
+t_no_out "failed adopt is not retried with force" 'brew install .*--force' calls
+t_out "failed adopt shows brew's own error" 'iTerm2.*FAIL\n\n.*brew install -q --cask --adopt iterm2 exited 1\.' cat "$tmp/out"
+fresh; mkdir -p "$tmp/node_modules/codex/bin" "$SETUP_BREW_PREFIX/bin"; touch "$tmp/node_modules/codex/bin/codex"
+ln -s "$tmp/node_modules/codex/bin/codex" "$SETUP_BREW_PREFIX/bin/codex"; install > "$tmp/out"
+t_true "occupied bin path: brew cask gets it" bash -c '[ -f "$1/bin/codex" ] && [ ! -L "$1/bin/codex" ]' _ "$SETUP_BREW_PREFIX"
+t_true "occupied bin path: old link moved aside, not deleted" bash -c 'ls "$1"/.setup-macos/replaced/codex-* >/dev/null 2>&1 && [ -e "$2/node_modules/codex/bin/codex" ]' _ "$HOME" "$tmp"
+t_out "occupied bin path listed as earlier install" "codex\s+$tmp/node_modules/codex/bin/codex\s+moved out of brew" cat "$tmp/out"
 fresh; printf 'cask:claude-code\n' > "$STUB_BREW_STATE"; install >/dev/null
 t_out "conflicting cask replaced" 'brew uninstall -q --cask claude-code\n(.*\n)*brew install -q --cask claude-code@latest' calls
 fresh; mkdir -p "$tmp/npm"; touch "$tmp/npm/codex" "$tmp/npm/conda"; chmod +x "$tmp/npm/codex" "$tmp/npm/conda"
@@ -164,10 +194,16 @@ fresh; install >/dev/null
 t_true "no zshrc before means no backup" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
 fresh; cp "$setup/zshrc" "$HOME/.zshrc"; install >/dev/null
 t_true "identical zshrc is not backed up" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
+fresh; printf 'export OLD=1\n' > "$HOME/.zshrc"; STUB_BREW_FAIL=codex install >/dev/null 2>&1
+t_true "failed run keeps the person's zshrc and its backup" bash -c 'grep -q "export OLD=1" "$1/.zshrc" && grep -q "export OLD=1" "$1"/.zshrc.backup-*' _ "$HOME"
 fresh; STUB_BREW_FAIL=codex install >/dev/null 2>&1
-t_true "failed run has not touched zshrc yet" test ! -e "$HOME/.zshrc"
+t_true "failed run on a fresh Mac leaves omz's zshrc, no backup" bash -c 'grep -q "omz template" "$1/.zshrc" && ! ls "$1"/.zshrc.backup-* >/dev/null 2>&1' _ "$HOME"
 fresh; printf 'eval $(/opt/homebrew/bin/brew shellenv)\n' > "$HOME/.zprofile"; install >/dev/null
 t_true "shellenv line already present with different quoting" bash -c '[ "$(grep -c "brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
+fresh; printf 'eval "$(/usr/local/bin/brew shellenv)"\n' > "$HOME/.zprofile"; install >/dev/null
+t_true "intel brew line does not count" bash -c '[ "$(grep -c "/opt/homebrew/bin/brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
+fresh; printf '# eval "$(/opt/homebrew/bin/brew shellenv)"\n' > "$HOME/.zprofile"; install >/dev/null
+t_true "commented shellenv line does not count" bash -c '[ "$(grep -c "^eval.*/opt/homebrew/bin/brew shellenv" "$1")" = 1 ]' _ "$HOME/.zprofile"
 fresh; SETUP_MIRROR=jsdelivr install >/dev/null
 t_out "mirror block written once" '# >>> setup/macos: homebrew mirror >>>\nexport HOMEBREW_BREW_GIT_REMOTE=.*\nexport HOMEBREW_API_DOMAIN=.*\nexport HOMEBREW_BOTTLE_DOMAIN=.*\n# <<< setup/macos: homebrew mirror <<<' cat "$HOME/.zprofile"
 SETUP_MIRROR=jsdelivr install >/dev/null

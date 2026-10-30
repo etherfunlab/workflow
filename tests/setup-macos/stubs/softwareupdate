@@ -1,6 +1,9 @@
 #!/bin/sh
 printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
 case "$1" in
-  -l) printf "Software Update Tool\n\nFinding available software\nSoftware Update found the following new or updated software:\n* Label: Command Line Tools for Xcode-27.0\n\tTitle: Command Line Tools for Xcode, Version: 27.0, Size: 900000K, Recommended: YES,\n" ;;
+  -l) printf 'Software Update Tool\n\nFinding available software\nSoftware Update found the following new or updated software:\n'
+      printf '* Label: Command Line Tools for Xcode 27.0-27.0.1\n\tTitle: Command Line Tools for Xcode, Version: 27.0.1, Size: 900000KiB, Recommended: YES,\n'
+      printf '* Label: Command Line Tools for Xcode 27.1 beta-27.1\n\tTitle: Command Line Tools for Xcode beta, Version: 27.1, Size: 900000KiB, Recommended: YES,\n'
+      printf '* Label: Command Line Tools for Xcode 26.4-26.4.1\n\tTitle: Command Line Tools for Xcode, Version: 26.4.1, Size: 900000KiB, Recommended: YES,\n' ;;
   -i) touch "$STUB_CLT" ;;
 esac

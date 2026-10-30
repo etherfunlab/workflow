@@ -8,3 +8,4 @@ for a in "$@"; do
 done
 case "$url" in ${STUB_GIT_FAIL:-^}) echo "fatal: unable to access $url" >&2; exit 128 ;; esac
 mkdir -p "$dir/.git"
+case "$url" in *powerlevel10k*) echo "# p10k" > "$dir/powerlevel10k.zsh-theme" ;; esac

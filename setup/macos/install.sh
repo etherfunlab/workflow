@@ -108,14 +108,27 @@ step_preflight() {
   [ "$(uname -s)" = Darwin ] || die "This script is for macOS."
   [ "$(uname -m)" = arm64 ] || die "This script needs an Apple Silicon Mac (arm64)."
   [ "$(id -u)" != 0 ] || die "Run this as your own user, not root; it asks for sudo when it needs it."
-  mkdir -p "$(dirname "$LOG")"
-  : >> "$LOG"
+  (umask 077; mkdir -p "$(dirname "$LOG")"; : >> "$LOG"; chmod 600 "$LOG")
+  check_cask_conflicts
   sudo -v
   # Keep the sudo timestamp fresh until this script exits.
   (while kill -0 "$$" 2>/dev/null; do sudo -n true; sleep 50; done) >/dev/null 2>&1 &
   KEEPALIVE=$!
   disown "$KEEPALIVE" # no "Terminated" notice when cleanup kills it
   say_item "macOS $(sw_vers -productVersion), arm64, not root" ok
+}
+
+# Homebrew refuses a cask whose conflicts_with cask is installed, --force or
+# not, and removing the conflicting one would take the person's data with it.
+check_cask_conflicts() {
+  [ -x "$BREW_PREFIX/bin/brew" ] || return 0
+  local pair c
+  for pair in miniforge:miniconda iterm2@beta:iterm2 iterm2@nightly:iterm2; do
+    c=${pair%%:*}
+    if "$BREW_PREFIX/bin/brew" list --cask "$c" >/dev/null 2>&1; then
+      die "Cask $c is installed and conflicts with ${pair#*:}, which this script installs. Decide what to keep, then run it again."
+    fi
+  done
 }
 
 # fetch_template <name>: into $WORK, from beside this script in a clone, else
@@ -127,6 +140,15 @@ fetch_template() {
   local base=$REPO_RAW
   [ "$SETUP_MIRROR" != jsdelivr ] || base=$REPO_CDN
   run curl -fsSL -o "$WORK/$1" "$base/$1"
+}
+
+# move_aside <dir> <label>: a directory in the way (an interrupted clone, say) is
+# renamed, listed under Backups, and reinstalled.
+move_aside() {
+  local b="$1.backup-$(date +%Y%m%d-%H%M%S)"
+  mv "$1" "$b"
+  BACKUPS="$BACKUPS$(tilde "$b")"$'\n'
+  say_notice "$2 is incomplete, moved to $(tilde "$b")"
 }
 
 # backup_if_changed <template> <file>
@@ -156,7 +178,11 @@ step_clt() {
   if xcode-select -p >/dev/null 2>&1; then say_item "already installed" skip; return; fi
   local label t=$SECONDS
   touch "$CLT_FLAG"
-  label=$(softwareupdate -l 2>/dev/null | sed -n 's/^\* Label: \(Command Line Tools for Xcode-.*\)$/\1/p' | tail -n 1)
+  # Same pipeline as Homebrew's installer: labels read "Command Line Tools for
+  # Xcode 26.4-26.4.1" today and "…Xcode-16.0" on older systems.
+  printf '+ softwareupdate -l\n' >> "$LOG"
+  label=$(softwareupdate -l 2>&1 | tee -a "$LOG" | grep -B1 -E 'Command Line Tools' | awk -F'*' '/^ *\*/ {print $2}' |
+    sed -e 's/^ *Label: //' -e 's/^ *//' | grep -vi beta | sort -V | tail -n 1 || true)
   if [ -z "$label" ]; then
     rm -f "$CLT_FLAG"; LAST_CMD="softwareupdate -l" LAST_RC=1
     say_item "no Command Line Tools offered by softwareupdate" FAIL; say_fail
@@ -174,7 +200,7 @@ brew_env() {
     export HOMEBREW_API_DOMAIN="${HOMEBREW_API_DOMAIN:-https://mirrors.ustc.edu.cn/homebrew-bottles/api}"
     export HOMEBREW_BOTTLE_DOMAIN="${HOMEBREW_BOTTLE_DOMAIN:-https://mirrors.ustc.edu.cn/homebrew-bottles}"
   fi
-  env | grep '^HOMEBREW_' >> "$LOG" || true
+  env | grep -E '^HOMEBREW_(BREW_GIT_REMOTE|API_DOMAIN|BOTTLE_DOMAIN)=' >> "$LOG" || true
 }
 
 step_homebrew() {
@@ -197,13 +223,14 @@ step_homebrew() {
 # clone fail after 30 s instead of hanging.
 omz_install() {
   run curl -fsSL -o "$WORK/omz-install.sh" "$1" &&
-    run env ${2:+REMOTE=$2} GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=30 \
+    run env -u ZDOTDIR ZSH="$HOME/.oh-my-zsh" ${2:+REMOTE=$2} GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=30 \
       sh "$WORK/omz-install.sh" --unattended --keep-zshrc
 }
 
 step_omz() {
   say_banner 4 oh-my-zsh
-  if [ -d "$HOME/.oh-my-zsh/.git" ]; then say_item "already installed" skip; return; fi
+  if [ -f "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]; then say_item "already installed" skip; return; fi
+  [ ! -e "$HOME/.oh-my-zsh" ] || move_aside "$HOME/.oh-my-zsh" "~/.oh-my-zsh"
   local t=$SECONDS
   if [ "$SETUP_MIRROR" != jsdelivr ]; then
     omz_install https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh || { say_item installer FAIL; say_fail; }
@@ -219,7 +246,8 @@ step_omz() {
 step_p10k() {
   say_banner 5 powerlevel10k
   local dest="$ZSH_CUSTOM_DIR/themes/powerlevel10k" t=$SECONDS
-  if [ -d "$dest" ]; then say_item "already installed" skip; return; fi
+  if [ -f "$dest/powerlevel10k.zsh-theme" ]; then say_item "already installed" skip; return; fi
+  [ ! -e "$dest" ] || move_aside "$dest" "powerlevel10k"
   if [ "$SETUP_MIRROR" != jsdelivr ]; then
     run git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$dest" || { say_item "git clone" FAIL; say_fail; }
     say_item "cloned from github.com/romkatv/powerlevel10k" done $((SECONDS - t))
@@ -253,10 +281,12 @@ brew_formula() {
   say_item "$1" done $((SECONDS - t))
 }
 
-# brew_cask <cask> [App.app] [label]: an app already in APPS_DIR that brew did
-# not install is adopted. Anything else in the way is overwritten on a retry.
+# brew_cask <cask> [App.app] [label] [binary]: an app already in APPS_DIR that
+# brew did not install is adopted. A binary on the cask's path that is not the
+# cask's own (an npm link, say) is moved aside, because brew refuses to replace
+# it even with --force; the package it points to stays installed.
 brew_cask() {
-  local cask=$1 app=${2:-} label=${3:-$1} t=$SECONDS adopt= status=done desc
+  local cask=$1 app=${2:-} label=${3:-$1} bin=${4:-} t=$SECONDS adopt= status=done desc path target aside
   desc=$label
   if brew list --cask "$cask" >/dev/null 2>&1; then say_item "$label" skip; return; fi
   if [ -n "$app" ] && [ -e "$APPS_DIR/$app" ]; then
@@ -264,10 +294,16 @@ brew_cask() {
     desc="$label: $(tilde "$APPS_DIR/$app") was not installed by brew"
     EARLIER="$EARLIER$label|$(tilde "$APPS_DIR/$app")|now managed by brew"$'\n'
   fi
-  if ! run brew install -q --cask $adopt "$cask"; then
-    run brew install -q --cask $adopt --force "$cask" || { say_item "$desc" FAIL; say_fail; }
-    say_notice "$cask: an earlier install was in the way, overwrote it"
+  path="$BREW_PREFIX/bin/$bin"
+  if [ -n "$bin" ] && { [ -e "$path" ] || [ -L "$path" ]; }; then
+    target=$(readlink "$path" || true)
+    aside="$HOME/.setup-macos/replaced/$bin-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$(dirname "$aside")"
+    mv "$path" "$aside"
+    EARLIER="$EARLIER$bin|${target:-$(tilde "$path")}|moved out of brew's way to $(tilde "$aside")"$'\n'
+    say_notice "$bin: $(tilde "$path") was not from brew, moved it to $(tilde "$aside")"
   fi
+  run brew install -q --cask $adopt "$cask" || { say_item "$desc" FAIL; say_fail; }
   say_item "$desc" $status $((SECONDS - t))
 }
 
@@ -303,21 +339,21 @@ step_fonts() {
 step_apps() {
   say_banner 8 Apps
   brew_cask iterm2 iTerm.app iTerm2
-  brew_cask visual-studio-code "Visual Studio Code.app" "Visual Studio Code"
+  brew_cask visual-studio-code "Visual Studio Code.app" "Visual Studio Code" code
 }
 
 step_clis() {
   say_banner 9 CLIs
   brew list --cask miniconda >/dev/null 2>&1 || note_earlier conda
-  brew_cask miniconda
+  brew_cask miniconda "" miniconda conda
   if brew list --cask claude-code >/dev/null 2>&1; then
     say_notice "replacing cask claude-code with claude-code@latest"
     run brew uninstall -q --cask claude-code || { say_item claude-code FAIL; say_fail; }
   fi
   brew list --cask claude-code@latest >/dev/null 2>&1 || note_earlier claude
-  brew_cask claude-code@latest
+  brew_cask claude-code@latest "" claude-code@latest claude
   brew list --cask codex >/dev/null 2>&1 || note_earlier codex
-  brew_cask codex
+  brew_cask codex "" codex codex
   local t=$SECONDS
   if [ -x "$HOME/.grok/bin/grok" ]; then
     say_item grok skip
@@ -338,8 +374,8 @@ place_file() {
 
 ensure_zprofile() {
   local f="$HOME/.zprofile" changed= label="~/.zprofile: brew shellenv"
-  touch "$f"
-  if ! grep -q 'brew shellenv' "$f"; then
+  [ -e "$f" ] || : > "$f"
+  if ! grep -qE '^[^#]*/opt/homebrew/bin/brew[[:space:]]+shellenv' "$f"; then
     printf '\neval "$(/opt/homebrew/bin/brew shellenv)"\n' >> "$f"
     changed=1
   fi
