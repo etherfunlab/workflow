@@ -12,7 +12,7 @@
 #   SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
 #
 # Asks for the sudo password once. Safe to rerun: finished steps are skipped.
-set -euo pipefail
+set -eEuo pipefail
 
 SETUP_MIRROR="${SETUP_MIRROR:-}"
 # Empty under `bash -c "$(curl …)"`; set when run from a clone.
@@ -98,6 +98,13 @@ say_fail() {
   exit 1
 }
 
+# For commands that fail outside `run` (cp, mv, chmod, sudo -v): say what failed
+# and where the log is instead of dying with a bare error.
+on_err() {
+  printf '\n    %s%s failed.%s\n    Full log: %s\n' "$RED$BOLD" "$BASH_COMMAND" "$RESET" "$(tilde "$LOG")" >&2
+  exit 1
+}
+
 cleanup() {
   [ -z "$KEEPALIVE" ] || kill "$KEEPALIVE" 2>/dev/null || true
   [ -z "$WORK" ] || rm -rf "$WORK"
@@ -108,11 +115,11 @@ step_preflight() {
   [ "$(uname -s)" = Darwin ] || die "This script is for macOS."
   [ "$(uname -m)" = arm64 ] || die "This script needs an Apple Silicon Mac (arm64)."
   [ "$(id -u)" != 0 ] || die "Run this as your own user, not root; it asks for sudo when it needs it."
-  (umask 077; mkdir -p "$(dirname "$LOG")"; : >> "$LOG"; chmod 600 "$LOG")
   check_cask_conflicts
+  (umask 077; mkdir -p "$(dirname "$LOG")"; : >> "$LOG"; chmod 600 "$LOG")
   sudo -v
   # Keep the sudo timestamp fresh until this script exits.
-  (while kill -0 "$$" 2>/dev/null; do sudo -n true; sleep 50; done) >/dev/null 2>&1 &
+  (trap - ERR EXIT; while kill -0 "$$" 2>/dev/null; do sudo -n true || true; sleep 50; done) >/dev/null 2>&1 &
   KEEPALIVE=$!
   disown "$KEEPALIVE" # no "Terminated" notice when cleanup kills it
   say_item "macOS $(sw_vers -productVersion), arm64, not root" ok
@@ -258,11 +265,20 @@ step_p10k() {
   run curl -fsSL -o "$WORK/p10k.json" "$P10K_LIST@$P10K_COMMIT?structure=flat" || { say_item "file list from jsDelivr" FAIL; say_fail; }
   # Drop everything before "files" so the package's own "name" is not read as a file.
   names=$(tr -d '\n' < "$WORK/p10k.json" | sed 's/.*"files": *\[//' | tr '}' '\n' | sed -n 's/.*"name": *"\([^"]*\)".*/\1/p')
-  if [ -z "$names" ]; then
+  # A truncated body (a CDN error with HTTP 200) must not install half a theme.
+  if [ "$(tr -d '\n\r\t ' < "$WORK/p10k.json" | tail -c 1)" != '}' ] ||
+     ! printf '%s\n' "$names" | grep -qx '/powerlevel10k.zsh-theme' ||
+     ! printf '%s\n' "$names" | grep -qx '/internal/p10k.zsh'; then
     say_item "file list from jsDelivr" FAIL
-    say_fail "The jsDelivr file list for powerlevel10k@$P10K_COMMIT names no files."
+    say_fail "The jsDelivr file list for powerlevel10k@$P10K_COMMIT is incomplete."
   fi
   while IFS= read -r name; do
+    # Paths come from the network: absolute within the package, plain characters, no "..".
+    case $name in
+      /*/../* | /../* | */.. | */./* | //* | *[!A-Za-z0-9._/-]* | "") 
+        say_item "$name from jsDelivr" FAIL
+        say_fail "The jsDelivr file list for powerlevel10k@$P10K_COMMIT has an unsafe path: $name" ;;
+    esac
     run curl -fsSL --create-dirs -o "$tmp$name" "$P10K_CDN@$P10K_COMMIT$name" || { say_item "$name from jsDelivr" FAIL; say_fail; }
     count=$((count + 1))
   done <<< "$names"
@@ -295,7 +311,7 @@ brew_cask() {
     EARLIER="$EARLIER$label|$(tilde "$APPS_DIR/$app")|now managed by brew"$'\n'
   fi
   path="$BREW_PREFIX/bin/$bin"
-  if [ -n "$bin" ] && { [ -e "$path" ] || [ -L "$path" ]; }; then
+  if [ -n "$bin" ] && { [ -e "$path" ] || [ -L "$path" ]; } && ! brew_owns "$path"; then
     target=$(readlink "$path" || true)
     aside="$HOME/.setup-macos/replaced/$bin-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$(dirname "$aside")"
@@ -305,6 +321,15 @@ brew_cask() {
   fi
   run brew install -q --cask $adopt "$cask" || { say_item "$desc" FAIL; say_fail; }
   say_item "$desc" $status $((SECONDS - t))
+}
+
+# brew_owns <path>: a link into Caskroom or Cellar is Homebrew's; brew sorts
+# those out itself.
+brew_owns() {
+  local t
+  t=$(readlink "$1" 2>/dev/null) || return 1
+  case $t in "$BREW_PREFIX"/Caskroom/* | "$BREW_PREFIX"/Cellar/* | ../Caskroom/* | ../Cellar/*) return 0 ;; esac
+  return 1
 }
 
 # note_earlier <command>: a copy outside Homebrew stays where it is; the brew
@@ -366,22 +391,27 @@ step_clis() {
 
 # place_file <src> <dest> <label>: no backup here; prepare_dotfiles took it.
 place_file() {
-  if [ -f "$2" ] && cmp -s "$1" "$2"; then say_item "$3" skip; return; fi
+  if [ -f "$2" ] && [ ! -L "$2" ] && cmp -s "$1" "$2"; then say_item "$3" skip; return; fi
   mkdir -p "$(dirname "$2")"
+  [ ! -L "$2" ] || rm "$2" # a dotfiles-repo link: replace the link, leave its target alone
   cp "$1" "$2"
   say_item "$3" done
 }
+
+end_line() { [ ! -s "$1" ] || [ "$(tail -c 1 "$1")" = "" ] || echo >> "$1"; }
 
 ensure_zprofile() {
   local f="$HOME/.zprofile" changed= label="~/.zprofile: brew shellenv"
   [ -e "$f" ] || : > "$f"
   if ! grep -qE '^[^#]*/opt/homebrew/bin/brew[[:space:]]+shellenv' "$f"; then
+    end_line "$f"
     printf '\neval "$(/opt/homebrew/bin/brew shellenv)"\n' >> "$f"
     changed=1
   fi
   if [ "$SETUP_MIRROR" = jsdelivr ]; then
     label="$label, mirror block"
     if ! grep -qF '# >>> setup/macos: homebrew mirror >>>' "$f"; then
+      end_line "$f"
       {
         printf '# >>> setup/macos: homebrew mirror >>>\n'
         printf 'export HOMEBREW_BREW_GIT_REMOTE="%s"\n' "$HOMEBREW_BREW_GIT_REMOTE"
@@ -451,6 +481,7 @@ main() {
     *) echo "SETUP_MIRROR must be empty or jsdelivr, got: $SETUP_MIRROR" >&2; exit 1 ;;
   esac
   trap cleanup EXIT
+  trap on_err ERR
   WORK=$(mktemp -d)
   say_header
   step_preflight

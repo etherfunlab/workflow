@@ -25,7 +25,7 @@ P10K_COMMIT=d05a1b00f9a61f9578bf9dc19b8451942dde8734
 work=$(mktemp -d); trap 'rm -rf "$work"' EXIT
 n=0
 fresh() {
-  n=$((n+1)); tmp="$work/$n"; mkdir -p "$tmp/home" "$tmp/http"
+  n=$((n+1)); tmp="$work/$n"; mkdir -p "$tmp/home" "$tmp/http" "$tmp/tmpdir"
   cp "$root/tests/setup-macos/http/"* "$tmp/http/"
   local f
   for f in zshrc p10k.zsh iterm2-profile.json; do
@@ -33,9 +33,9 @@ fresh() {
     cp "$setup/$f" "$tmp/http/https___cdn.jsdelivr.net_gh_etherfunlab_workflow@main_setup_macos_$f"
   done
   unset SETUP_MIRROR SETUP_P10K_COMMIT STUB_ARCH STUB_UID STUB_GIT_FAIL STUB_BREW_FAIL \
-    STUB_ITERM_RUNNING EXTRA_PATH NO_COLOR ZDOTDIR HOMEBREW_GITHUB_API_TOKEN \
+    STUB_ITERM_RUNNING STUB_SUDO_FAIL EXTRA_PATH NO_COLOR ZDOTDIR HOMEBREW_GITHUB_API_TOKEN \
     HOMEBREW_BREW_GIT_REMOTE HOMEBREW_API_DOMAIN HOMEBREW_BOTTLE_DOMAIN
-  export HOME="$tmp/home" SHELL=/bin/zsh STUB_DIR \
+  export HOME="$tmp/home" SHELL=/bin/zsh STUB_DIR TMPDIR="$tmp/tmpdir" \
     SETUP_BREW_PREFIX="$tmp/brew" SETUP_APPS_DIR="$tmp/apps" SETUP_LOG="$tmp/setup.log" \
     SETUP_CLT_FLAG="$tmp/clt-flag" STUB_CLT="$tmp/clt" STUB_HTTP="$tmp/http" \
     STUB_LOG="$tmp/calls" STUB_BREW_STATE="$tmp/brew-state"
@@ -59,6 +59,7 @@ calls() { cat "$STUB_LOG"; }
 # Preflight.
 fresh; STUB_ARCH=x86_64 t_exit "intel mac exits 1" 1 install
 t_true "intel mac wrote nothing" test ! -e "$HOME/.zshrc" -a ! -e "$SETUP_LOG"
+t_true "rejected run made no scratch dir" bash -c '[ -z "$(ls -A "$1")" ]' _ "$TMPDIR"
 fresh; STUB_UID=0 t_exit "root exits 1" 1 install
 fresh; SETUP_MIRROR=bogus t_exit "unknown mirror exits 1" 1 install
 SETUP_MIRROR=bogus t_out "unknown mirror says why" 'SETUP_MIRROR must be empty or jsdelivr' install
@@ -70,7 +71,9 @@ t_exit "install.sh parses" 0 bash -n "$setup/install.sh"
 fresh; mkdir -p "$SETUP_BREW_PREFIX/bin"; cp "$STUB_DIR/brew" "$SETUP_BREW_PREFIX/bin/brew"; printf 'cask:miniforge\n' > "$STUB_BREW_STATE"
 t_exit "brew miniforge stops the run before anything is installed" 1 install
 t_out "miniforge stop says why" 'miniforge.*conflicts with.*miniconda' install
-t_true "miniforge stop touched nothing" bash -c '! grep -qE "brew install|softwareupdate -i" "$1" && ! test -e "$2/.zshrc"' _ "$STUB_LOG" "$HOME"
+t_true "miniforge stop touched nothing" bash -c '! grep -qE "brew install|softwareupdate -i" "$1" && ! test -e "$2/.zshrc" && ! test -e "$3"' _ "$STUB_LOG" "$HOME" "$SETUP_LOG"
+fresh; STUB_SUDO_FAIL=1 t_exit "cancelled sudo exits 1" 1 install
+fresh; STUB_SUDO_FAIL=1 t_out "cancelled sudo names the log" 'sudo -v failed\.\n\s+Full log: .*setup\.log' install
 
 # Command Line Tools and Homebrew.
 fresh; install >/dev/null
@@ -122,6 +125,15 @@ SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=deadbeef t_exit "bad listing stops the r
 t_true "bad listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
 fresh; SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=feedface install >/dev/null 2>&1
 t_true "missing listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
+fresh; printf '{"type":"gh","name":"romkatv/powerlevel10k","version":"cafe","files":[{"name":"/powerlevel10k.zsh-theme","hash":"x","size":1},{"name":"/inter' > "$tmp/http/https___data.jsdelivr.com_v1_packages_gh_romkatv_powerlevel10k@cafe?structure=flat"
+echo "# theme" > "$tmp/http/https___cdn.jsdelivr.net_gh_romkatv_powerlevel10k@cafe_powerlevel10k.zsh-theme"
+SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=cafe t_exit "truncated listing stops the run" 1 install
+t_true "truncated listing leaves no p10k dir" test ! -e "$HOME/.oh-my-zsh/custom/$p10k"
+fresh; printf '{"type":"gh","name":"romkatv/powerlevel10k","version":"bad","files":[{"name":"/powerlevel10k.zsh-theme","hash":"x","size":1},{"name":"/internal/p10k.zsh","hash":"x","size":1},{"name":"/../../../escape","hash":"x","size":1}],"links":{}}\n' > "$tmp/http/https___data.jsdelivr.com_v1_packages_gh_romkatv_powerlevel10k@bad?structure=flat"
+echo evil > "$tmp/http/https___cdn.jsdelivr.net_gh_romkatv_powerlevel10k@bad_.._.._.._escape"
+for f in powerlevel10k.zsh-theme internal_p10k.zsh; do echo "# $f" > "$tmp/http/https___cdn.jsdelivr.net_gh_romkatv_powerlevel10k@bad_$f"; done
+SETUP_MIRROR=jsdelivr SETUP_P10K_COMMIT=bad t_exit "traversal in the listing stops the run" 1 install
+t_true "traversal wrote nothing outside the scratch dir" test ! -e "$tmp/escape" -a ! -e "$tmp/tmpdir/escape"
 fresh; mkdir -p "$HOME/.oh-my-zsh/.git" "$HOME/.oh-my-zsh/custom/$p10k"; touch "$HOME/.oh-my-zsh/oh-my-zsh.sh" "$HOME/.oh-my-zsh/custom/$p10k/powerlevel10k.zsh-theme"
 t_out "omz and p10k present are skipped" 'oh-my-zsh\n\s+already installed\s+skip\n.*powerlevel10k\n\s+already installed\s+skip' install
 fresh; mkdir -p "$HOME/.oh-my-zsh/.git"; install > "$tmp/out"
@@ -155,6 +167,10 @@ ln -s "$tmp/node_modules/codex/bin/codex" "$SETUP_BREW_PREFIX/bin/codex"; instal
 t_true "occupied bin path: brew cask gets it" bash -c '[ -f "$1/bin/codex" ] && [ ! -L "$1/bin/codex" ]' _ "$SETUP_BREW_PREFIX"
 t_true "occupied bin path: old link moved aside, not deleted" bash -c 'ls "$1"/.setup-macos/replaced/codex-* >/dev/null 2>&1 && [ -e "$2/node_modules/codex/bin/codex" ]' _ "$HOME" "$tmp"
 t_out "occupied bin path listed as earlier install" "codex\s+$tmp/node_modules/codex/bin/codex\s+moved out of brew" cat "$tmp/out"
+fresh; mkdir -p "$SETUP_BREW_PREFIX/Caskroom/codex/0.1/bin" "$SETUP_BREW_PREFIX/bin"; printf '#!/bin/sh\n# stub cask codex\n' > "$SETUP_BREW_PREFIX/Caskroom/codex/0.1/bin/codex"
+ln -s "$SETUP_BREW_PREFIX/Caskroom/codex/0.1/bin/codex" "$SETUP_BREW_PREFIX/bin/codex"; install >/dev/null
+t_true "brew's own link is not moved aside" test ! -e "$HOME/.setup-macos/replaced"
+t_out "brew's own link: cask still installed" 'brew install -q --cask codex' calls
 fresh; printf 'cask:claude-code\n' > "$STUB_BREW_STATE"; install >/dev/null
 t_out "conflicting cask replaced" 'brew uninstall -q --cask claude-code\n(.*\n)*brew install -q --cask claude-code@latest' calls
 fresh; mkdir -p "$tmp/npm"; touch "$tmp/npm/codex" "$tmp/npm/conda"; chmod +x "$tmp/npm/codex" "$tmp/npm/conda"
@@ -190,8 +206,13 @@ t_true "old content is in the backup" bash -c 'grep -q "export OLD=1" "$1"/.zshr
 t_true "backup taken before installers ran" bash -c 'ls "$1"/.zshrc.backup-* >/dev/null 2>&1 && ! grep -q "grok installer" "$1"/.zshrc.backup-*' _ "$HOME"
 t_true "only one backup per file" bash -c '[ "$(ls "$1"/.zshrc.backup-* | wc -l)" -eq 1 ]' _ "$HOME"
 t_true "installer edits are gone from the final zshrc" cmp -s "$setup/zshrc" "$HOME/.zshrc"
+fresh; printf 'export OLD=1\n' > "$HOME/.zshrc"; rm "$tmp/http/https___raw.githubusercontent.com_Homebrew_install_HEAD_install.sh"; install >/dev/null 2>&1
+t_true "backup exists before the first installer runs" bash -c 'grep -q "export OLD=1" "$1"/.zshrc.backup-*' _ "$HOME"
 fresh; install >/dev/null
 t_true "no zshrc before means no backup" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
+fresh; mkdir -p "$tmp/dotfiles"; printf 'export OLD=1\n' > "$tmp/dotfiles/zshrc"; ln -s "$tmp/dotfiles/zshrc" "$HOME/.zshrc"; install >/dev/null
+t_true "symlinked zshrc: the link is replaced, its target untouched" bash -c '[ ! -L "$1/.zshrc" ] && cmp -s "$2" "$1/.zshrc" && grep -q "export OLD=1" "$3/dotfiles/zshrc"' _ "$HOME" "$setup/zshrc" "$tmp"
+t_true "symlinked zshrc: old content backed up" bash -c 'grep -q "export OLD=1" "$1"/.zshrc.backup-*' _ "$HOME"
 fresh; cp "$setup/zshrc" "$HOME/.zshrc"; install >/dev/null
 t_true "identical zshrc is not backed up" bash -c '! ls "$1"/.zshrc.backup-* 2>/dev/null' _ "$HOME"
 fresh; printf 'export OLD=1\n' > "$HOME/.zshrc"; STUB_BREW_FAIL=codex install >/dev/null 2>&1
@@ -208,6 +229,8 @@ fresh; SETUP_MIRROR=jsdelivr install >/dev/null
 t_out "mirror block written once" '# >>> setup/macos: homebrew mirror >>>\nexport HOMEBREW_BREW_GIT_REMOTE=.*\nexport HOMEBREW_API_DOMAIN=.*\nexport HOMEBREW_BOTTLE_DOMAIN=.*\n# <<< setup/macos: homebrew mirror <<<' cat "$HOME/.zprofile"
 SETUP_MIRROR=jsdelivr install >/dev/null
 t_true "mirror block not duplicated" bash -c '[ "$(grep -c "homebrew mirror >>>" "$1")" = 1 ]' _ "$HOME/.zprofile"
+fresh; printf 'eval "$(/opt/homebrew/bin/brew shellenv)"' > "$HOME/.zprofile"; SETUP_MIRROR=jsdelivr install >/dev/null
+t_out "mirror block starts on its own line after a file without trailing newline" 'shellenv\)"\n# >>> setup/macos: homebrew mirror >>>' cat "$HOME/.zprofile"
 fresh; SETUP_MIRROR=jsdelivr HOMEBREW_API_DOMAIN=https://example.test/api install >/dev/null
 t_out "mirror block keeps a preset value" 'export HOMEBREW_API_DOMAIN="https://example\.test/api"' cat "$HOME/.zprofile"
 fresh; STUB_ITERM_RUNNING=1 install > "$tmp/out"
@@ -221,7 +244,8 @@ fresh; SETUP_MIRROR=jsdelivr install_piped >/dev/null
 t_out "mirror run fetches templates from jsDelivr" 'curl .*cdn\.jsdelivr\.net/gh/etherfunlab/workflow@main/setup/macos/zshrc' calls
 t_no_out "mirror run never asks raw.githubusercontent.com for templates" 'raw\.githubusercontent\.com/etherfunlab' calls
 fresh; rm "$tmp/http/https___raw.githubusercontent.com_etherfunlab_workflow_main_setup_macos_p10k.zsh"
-install_piped >/dev/null 2>&1
-t_true "unreachable template stops before installing anything" bash -c '! grep -q "brew-install" "$1"' _ "$STUB_LOG"
+t_exit "unreachable template exits 1" 1 install_piped
+t_out "unreachable template is named" 'template p10k\.zsh\s+FAIL' install_piped
+t_true "unreachable template stops before installing anything" bash -c '! grep -qE "brew-install|softwareupdate -i|git clone|brew install" "$1"' _ "$STUB_LOG"
 
 t_done setup-macos

@@ -23,7 +23,7 @@ case "$cmd" in
       /usr/bin/grep -qxF "cask:$c" "$STUB_BREW_STATE" && { echo "Error: Cask '$name' conflicts with '$c'." >&2; exit 1; }
     done
     b=$(bin_for "$name")
-    if [ -n "$b" ] && [ -e "$SETUP_BREW_PREFIX/bin/$b" ] && ! /usr/bin/grep -q "stub cask $name" "$SETUP_BREW_PREFIX/bin/$b" 2>/dev/null; then
+    if [ -n "$b" ] && { [ -e "$SETUP_BREW_PREFIX/bin/$b" ] || [ -L "$SETUP_BREW_PREFIX/bin/$b" ]; } && ! /usr/bin/grep -q "stub cask $name" "$SETUP_BREW_PREFIX/bin/$b" 2>/dev/null; then
       echo "Error: It seems there is already a Binary at '$SETUP_BREW_PREFIX/bin/$b'." >&2; exit 1
     fi
     if fails; then
