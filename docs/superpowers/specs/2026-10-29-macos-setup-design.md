@@ -123,7 +123,7 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 - 不是 macOS、不是 arm64、以 root 运行：直接退出，不动任何文件。
 - 开跑时先备份：`~/.zshrc`、`~/.p10k.zsh` 已存在且与模板不同的，各备份一份 `<file>.backup-<YYYYMMDD-HHMMSS>`；与模板相同的不备份。
-- 每一步先判断是否已按设计的方式装好（对应的 brew formula / cask、`~/.oh-my-zsh` git 仓、`~/.grok/bin/grok`），装好就跳过；以别的方式装过的见下一节。
+- 每一步先判断是否已按设计的方式装好（对应的 brew formula / cask、`~/.oh-my-zsh/oh-my-zsh.sh`、`powerlevel10k.zsh-theme`、`~/.grok/bin/grok`），装好就跳过；以别的方式装过的见下一节。中断的 clone 留下的半个目录改名为 `<dir>.backup-<时间戳>`、列进结尾的 Backups，再重装。
 - omz 安装器用 `--unattended --keep-zshrc`：不 chsh，不自己备份，不改 `.zshrc`。
 - `.zshrc` 和 `.p10k.zsh` 在所有安装器之后写，盖掉安装器追加的内容。
 - `.zprofile` 里的 shellenv 行与镜像块：已有就不再加。
@@ -134,9 +134,9 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 组件以别的方式装过时，设计里的安装方式接管，旧安装不卸载：
 
-- **app**（iTerm2、VS Code）在 `/Applications` 里但不归 brew 管：`brew install --cask --adopt` 接过来；brew 因版本不同拒绝 adopt 时用 `--force` 覆盖 app 本体（用户设置在 `~/Library`，不受影响）。
-- **CLI**（claude、codex）：照装 brew 版，旧的留在原处；最终的 `.zshrc` / `.zprofile` 保证 brew 版在 PATH 上优先。新旧争同一个路径时（如 npm 全局装的 codex 也链接到 `/opt/homebrew/bin/codex`），brew 版占这个路径，旧包本身不卸载。
-- **brew 内部互斥的 cask**（例如已装 `claude-code`，与 `claude-code@latest` 冲突）：卸掉旧 cask，换成设计里的那个。
+- **app**（iTerm2、VS Code）在 `/Applications` 里但不归 brew 管：`brew install --cask --adopt` 接过来（用户设置在 `~/Library`，不受影响）。adopt 失败就照常停下、显示 brew 的报错；brew 不接受 `--adopt` 与 `--force` 同用，这两个 cask 又是 `auto_updates`，adopt 不比对版本。
+- **CLI**（claude、codex）：照装 brew 版，旧的留在原处；最终的 `.zshrc` / `.zprofile` 保证 brew 版在 PATH 上优先。新旧争同一个路径时（如 npm 全局装的 codex 也链接到 `/opt/homebrew/bin/codex`），先把占着路径的文件移到 `~/.setup-macos/replaced/`，再装 brew 版；旧包本身不卸载。brew 的 `--force` 不会替换不属于该 cask 的二进制。
+- **brew 内部互斥的 cask**：已装 `claude-code`（与 `claude-code@latest` 冲突）就卸掉旧 cask，换成设计里的那个。已装 `miniforge`（与 `miniconda` 冲突）或 `iterm2@beta` / `iterm2@nightly`（与 `iterm2` 冲突）时在 preflight 停下、什么都不装，由用户决定留哪个：卸 miniforge 会带走用户的 conda 环境。
 - **conda**：机器上另有 Anaconda、miniforge 等时，照装 brew 的 miniconda 并存；新 `.zshrc` 的 conda 块只指向 brew 那份，旧 `.zshrc` 里的 conda init 块随备份留下。
 - 结尾汇总列出：接管了哪些，哪些旧安装还留在机器上、在哪个路径。
 
