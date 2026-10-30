@@ -4,9 +4,9 @@
 
 まず心得を説き、続いて心得から導いた規則と道具を渡します。
 
-EtherFun Lab が、engineering の素養がある読者に向けて書きました。agent で開発する人、入門したばかりの vibe coder、若手の開発者、そして将来の同僚です。
+EtherFun Lab が、開発の素養がある読者に向けて書きました。agent で開発する人、入門したばかりの vibe coder、若手の開発者、そして将来の同僚です。
 
-他の言語：[README.md](README.md)（简体中文 · English）、[README.zh.md](README.zh.md)、[README.de.md](README.de.md)
+他の言語：[README.md](README.md)（简体中文 · English）、[README.zh.md](README.zh.md)（简体中文）、[README.de.md](README.de.md)（Deutsch）
 
 ## 使い方
 
@@ -16,10 +16,10 @@ EtherFun Lab が、engineering の素養がある読者に向けて書きまし�
 https://github.com/etherfunlab/workflow を読んで、ADOPT.md に従って私の project に組み込んでください。
 ```
 
-- **新規 project**：agent がどの module と雛形を使うか尋ね、変更一覧を挙げます。あなたが了承すると、まず `templates/base/` を敷き、選んだ雛形を重ね、そのあと module を導入します。
-- **既存 project**：agent はまず、既存の CLAUDE.md、AGENTS.md、`.claude/`、git hook をすべて読みます。そのうえで、どの module と雛形を使うか、規則を中国語と英語のどちらにするか、skill を project 単位と user 単位のどちらに入れるか（module が skill を導入する場合のみ尋ねます）、任意の hook を入れるかを尋ねます。着手前に、変更するすべての file を一覧にして見せます。repo にすでにある同じ内容の規則は飛ばし、衝突する規則はあなたが選びます。
+- **新規 project**：agent がどの module と雛形を使うか尋ね、変更一覧を挙げます。了承すると、まず `templates/base/` を敷き、選んだ雛形を重ね、そのあと module を導入します。
+- **既存 project**：agent はまず、既存の CLAUDE.md、AGENTS.md、`.claude/`、git hook をすべて読みます。そのうえで、どの module と雛形を使うか、規則を中国語と英語のどちらにするか、skill を project 単位と user 単位のどちらに入れるか（module が skill を導入する場合のみ尋ねます）、任意の hook を入れるかを尋ねます。着手前に、変更するすべての file を一覧にして見せます。repo にすでにある同じ内容の規則は飛ばし、衝突する規則は人間が選びます。
 - **repo の外の規則**：新規でも既存でも同じです。agent は user 単位と親 directory の規則 file を読みます。ある規則がそこにしかなければ、飛ばすかそれでも導入するかを尋ねます。飛ばした場合、他の人がこの repo を clone したとき、あるいは端末や agent を替えたとき、その規則はありません。
-- **更新**：導入後、repo に `.workflow.lock` ができ、導入した module と、対応する上流の commit が記録されます。この repo をもう一度 agent に渡すと、その commit から最新版までの上流の変更を拾い出し、module ごとに説明してくれます。あなたが了承した分だけ merge します。
+- **更新**：導入後、repo に `.workflow.lock` ができ、導入した module と、対応する上流の commit が記録されます。etherfunlab/workflow をもう一度 agent に渡すと、その commit から最新版までの上流の変更を調べ、module ごとに説明します。了承した分だけ merge します。
 
 Claude Code でしか使えない部分（hook、`.claude/rules/` の path 別の規則）は個別に明記してあります。Codex など他の agent は hook を飛ばし、path 別の規則は AGENTS.md に書き込みます。
 
@@ -33,28 +33,28 @@ Claude Code でしか使えない部分（hook、`.claude/rules/` の path 別�
 
 ## 規律
 
-規律は広く認められた engineering の実践なので、そのまま従えば十分です。一つ目の表は [root directory の CLAUDE.md 雛形](templates/dev-root/README.en.md)の内容で、各 repo の一つ上の directory に置き、配下のすべての repo に効きます。二つ目の表は [engineering module](modules/engineering/README.en.md) が各 repo に導入するものです。
+規律は広く認められた開発の実践なので、そのまま守れば十分です。一つ目の表は [root directory の CLAUDE.md 雛形](templates/dev-root/README.en.md)の内容で、各 repo の一つ上の directory に置き、配下のすべての repo に効きます。二つ目の表は [engineering module](modules/engineering/README.en.md) が各 repo に導入するものです。
 
 **repo 横断の規律**：
 
 | 事実 | 一言で |
 |---|---|
-| 本番への経路は一つ、分析系の repo は読み取り専用 | どの repo も本番を調べるときは、用意済みの command を一つだけ通す。監査・報告・会計系の repo は読み取りのみで、製品を作る repo は参照も変更もできる。生の行は terminal にも報告にも出さず、集計は手元で行う |
+| 本番への経路は一つ、分析系の repo は読み取り専用 | どの repo も本番を調べるときは、用意済みの command だけを使う。監査・報告・会計系の repo は読み取りのみで、製品を作る repo は参照も変更もできる。生の内容は terminal にも報告にも出さず、集計は手元で行う |
 | 公開 repo の対外規律 | 公開 repo の issue や PR に、非公開 repo 名・内部名称・本番の URL を出さない。実測の証拠は匿名化して示す |
-| PR は一度に一つ | PR を並行させると内容が絡み合い、衝突解消の負担は人に回る。新しい PR を拒まれたら、止まって確認する |
+| PR は一度に一つ | PR を並行させると内容が絡み合い、衝突解消の負担は人に回る。新しい PR の作成を拒まれたら、止まって尋ねる |
 | 数字に期間を付け、deploy で区切る | 報告の数字には必ず集計期間を明記する。deploy 一回が一つの era で、era をまたぐ数値は混ぜて計算しない |
-| 呼び出し課金の API は一巡で止まる | 呼び出しごとに課金される外部 API は、自動で何巡も反復しない。再試行は同じ呼び出しの一時的な障害に限る |
-| 見た目の判定は人間 | 見た目・組版・文面の調子に自動 assertion は書かない。候補を三つほどまとめて並べ、人が選ぶのを待って止まる。止まるのが正しい終点 |
-| 調べてから聞く | bug 報告を受けたら、現象を復唱して確認を求めず、code と log から原因を探す。証拠が分岐するときだけ尋ね、尋ねるときは選択肢を付ける |
+| 従量課金の API は一巡で止まる | 呼び出しごとに課金される外部 API は、自動で何巡も反復しない。再試行は同じ呼び出しの一時的な障害に限る |
+| 見た目の判定は人間 | 見た目・組版・文面の調子に自動 assertion は書かない。候補を三つほどまとめて並べ、止まって人が選ぶのを待つ。そこで止まるのが正しい終点 |
+| 調べてから聞く | bug 報告を受けたら、現象を復唱して確認を求めず、code と log から根本原因を探す。証拠から二通りに読めて絞れないときだけ尋ね、尋ねるときは選択肢を付ける |
 | commit の作法 | commit は英語の Conventional Commits。`.env` と secrets は絶対に commit しない。agent の shell は状態を持たないので、`conda run` のような単発の呼び出しを使い、activate は使わない |
 
-**repo 内の engineering 姿勢**：
+**repo 内の開発姿勢**：
 
 | 事実 | 一言で |
 |---|---|
-| KISS | 似た code が三箇所あるほうが、早すぎる抽象化より良い。まだ現れていない要求のために拡張点を残さない |
-| 事実ごとに正本は一つ | 数値・状態・判定条件はそれぞれ一箇所に定め、残りはすべて派生させる |
-| schema と API は source だけを正とする | schema は migration file、API は code を正とし、文書に副本を持たない |
+| KISS | 似た code が三か所あるほうが、早すぎる抽象化より良い。まだ現れていない要求のために拡張点を残さない |
+| 事実ごとに正本は一つ | 数値・状態・判定条件はそれぞれ一か所に定め、残りはすべて派生させる |
+| schema と API は source だけを正本とする | schema は migration file、API は code を正本とし、文書に副本を持たない |
 | API は足す前に再利用 | API を足す前に、まず既存のものを探す。frontend と backend のどちらに置くか迷ったら、先に聞く |
 | 調整で誤りは減らしても、零は追わない | 零に近づけようとするのは、この corpus の雑音に合わせ込むこと。指標が横ばいなのは課題ではない |
 | branch でなく release を見る | 本番でどの版が動いているかは release 一覧で確認する。deploy の前に、rollback の経路を決めておく |
@@ -69,7 +69,7 @@ Claude Code でしか使えない部分（hook、`.claude/rules/` の path 別�
 
 | 心得 | 一言で |
 |---|---|
-| 制約が先 | まず枝刈り：design → spec → plan → impl。要求が明確なほど、上が歪んで下まで歪むことが減る |
+| 制約が先 | まず枝刈り：design → spec → plan → impl。要求が明確なほど、上流の誤りが下流に及ぶことが減る |
 | code が王様 | source code は agent にとって最高の説明書。code を「人間に読みやすい」形式に潰さない |
 | repo 管理 | Git repo がそのまま memory と context の置き場。memory の同期は `.memory/` と hook 一つで足りる |
 | 下手なら練習 | これらの判断は AI に代替できない。AI に教わってもよいが、地道に学ぶ |
@@ -87,7 +87,7 @@ Claude Code でしか使えない部分（hook、`.claude/rules/` の path 別�
 
 ### code が王様
 
-source code は、agent に渡せる最高の説明書です。JSON や HTML の「code の可視化」を盲信してはいけません。agent はあなたよりずっとうまく code を読みます。人に分かるようにと code を「人間が読みやすい」形式に圧縮すると、かえって agent を誤らせます。
+source code は、agent に渡せる最高の説明書です。JSON や HTML の「code の可視化」を盲信してはいけません。agent は人間よりずっとうまく code を読みます。人に分かるようにと code を「人間が読みやすい」形式に圧縮すると、かえって agent を誤らせます。
 
 ### repo 管理
 
@@ -99,7 +99,7 @@ Git repo は、memory と context の置き場として最高のものです。c
 
 ### 正本は一つ
 
-権威文書は一か所にだけ置き、さらに memory に書いて、agent にどこを読むべきかを教えておきます。私は最初、spec、plan、milestone、schema、API をすべて入れた文書 repo を作りました。ところが、field の定義があちこちに散らばりました。文書 repo にあるもの、code にあるもの、各 project の repo 自身の `docs/` にあるもの。そこで次のように決めました。文書 repo に置くのは project 全体の overall spec と人が読むための文書だけ、spec は各 project 自身の `docs/superpowers/` に置く、schema 定義の正は `migration/*.sql` だけ、API 定義の正は code だけです。agent にまとめさせた Rust の用語対照表は、人が読むための文書にあたり、agent が Rust を書くときに何をしたのかを私が読み解く助けになります。
+権威文書は一か所にだけ置き、さらに memory に書いて、agent にどこを読むべきかを教えておきます。私は最初、spec、plan、milestone、schema、API をすべて入れた文書 repo を作りました。ところが、field の定義があちこちに散らばりました。文書 repo にあるもの、code にあるもの、各 project の repo 自身の `docs/` にあるもの。そこで次のように決めました。文書 repo に置くのは project 全体の overall spec と人が読むための文書だけ、spec は各 project 自身の `docs/superpowers/` に置く、schema 定義の正本は `migration/*.sql` だけ、API 定義の正本は code だけです。agent にまとめさせた Rust の用語対照表は、人が読むための文書にあたり、agent が Rust を書くときに何をしたのかを私が読み解く助けになります。
 
 ### CLI が CLI を呼ぶ
 
@@ -107,7 +107,7 @@ CLI 同士は互いに呼び出せます。たとえば Claude Code が運転席
 
 ### API に目を光らせる
 
-Claude Code は、うっかり新しい API を作ってしまうことがあります。既存の API を再利用するよう memory に書いておくだけでなく、自分でも気を配ってください。project が大きくなると、ある処理は frontend の middleware で確認すべきで、別の処理は backend の API が提供すべきになります。そのどちらをあなたが望んでいるのか、Claude Code が常に言い当てられるとは限りません。
+Claude Code は、うっかり新しい API を作ってしまうことがあります。既存の API を再利用するよう memory に書いておくだけでなく、自分でも気を配ってください。project が大きくなると、frontend の middleware で確認すべき処理と、backend の API が提供すべき処理が分かれてきます。どちらが求められているのか、Claude Code が常に言い当てられるとは限りません。
 
 ### まず壁打ち
 
@@ -117,14 +117,14 @@ Claude Code は、うっかり新しい API を作ってしまうことがあり
 
 GitHub の issue は本当に便利です。いまは repo をまたぐ問題が出ると、agent に issue を立てさせ、別の agent に読ませています。人間向けに設計された協働の仕組みは、agent が使ってもまったく同じようによく効きますし、私も追跡できます。
 
-## 心得を落とし込んだ実践
+## 心得から導いた実践
 
 | module | 解決すること | repo に導入されるもの |
 |---|---|---|
-| [writing](modules/writing/README.en.md) | 文章の規範、用語の規範、中国語の組版、日本語の用字、文書単位の執筆憲法 | `.claude/rules/writing.md`（他の agent：AGENTS.md の一節）＋ repo 直下の `WRITING.md` |
-| [checkup](modules/checkup/README.en.md) | 規則 file の定期点検 | skill `rules-checkup`、任意の更新通知 hook（Claude Code のみ） |
+| [writing](modules/writing/README.en.md) | 文章の規範、言葉遣いの規範、中国語の組版、日本語の用字、文書単位の執筆憲法 | `.claude/rules/writing.md`（他の agent：AGENTS.md の一節）＋ repo 直下の `WRITING.md` |
+| [checkup](modules/checkup/README.en.md) | 規則 file の定期点検 | skill `rules-checkup`、Claude Code の更新後に通知する任意の hook |
 | [rules-files](modules/rules-files/README.en.md) | CLAUDE.md / AGENTS.md の書き方 | `.claude/rules/rules-files.md`（他の agent：AGENTS.md の一節） |
-| [engineering](modules/engineering/README.en.md) | engineering の姿勢 | AGENTS.md の一節 |
+| [engineering](modules/engineering/README.en.md) | 開発姿勢 | AGENTS.md の一節 |
 | [carriers](modules/carriers/README.en.md) | 各文をどこに書くか | AGENTS.md の一節 |
 | [memory](modules/memory/README.en.md) | agent の memory を repo に写す | AGENTS.md の一節、`.memory/README.md`、`.githooks/`、同期 hook（Claude Code のみ） |
 | [review](modules/review/README.en.md) | 別の model 系列による code review | skill `codex-review` |
@@ -153,7 +153,7 @@ EtherFun Lab が project を進める中で溜めた skill をいくつか、[`s
 
 ## 環境構築 script
 
-[`setup/macos/install.sh`](setup/macos/install.sh) は Apple Silicon の Mac を EtherFun Lab の作業環境に整えます。Xcode Command Line Tools と Homebrew、oh-my-zsh・powerlevel10k と zsh-syntax-highlighting・zsh-autosuggestions・zsh-completions の三つの plugin を入れた zsh、MesloLGS NF の font と Ayu Mirage の配色を設定した iTerm2、それに VS Code、miniconda、Claude Code、Codex、Grok CLI です。`~/.zshrc` と `~/.p10k.zsh` は同じ directory の雛形から書き込み、既存のものが異なれば先に backup を取ります。`~/.zprofile` には Homebrew を追加します。別の方法で導入済みの app や CLI は Homebrew の管理下に移し、最後の要約で、この Mac に残った以前の導入を一覧にします。
+[`setup/macos/install.sh`](setup/macos/install.sh) は Apple Silicon の Mac を EtherFun Lab の作業環境に整えます。Xcode Command Line Tools と Homebrew、oh-my-zsh と powerlevel10k に加え、zsh-syntax-highlighting・zsh-autosuggestions・zsh-completions の三つの plugin を入れた zsh、MesloLGS NF の font と Ayu Mirage の配色を設定した iTerm2、それに VS Code、miniconda、Claude Code、Codex、Grok CLI です。`~/.zshrc` と `~/.p10k.zsh` は同じ directory の雛形から書き込み、既存のものが異なれば先に backup を取ります。`~/.zprofile` には Homebrew を追加します。別の方法で導入済みの app や CLI は Homebrew の管理下に移し、最後の要約で、この Mac に残った旧方式の導入物を一覧にします。
 
 新しい Mac では Terminal で実行します。
 
@@ -169,13 +169,13 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 
 この repo の file は jsDelivr から、Homebrew は中国科学技術大学（USTC）の mirror から取得し、oh-my-zsh は GitHub に繋がらないとき gitee の mirror から clone し、powerlevel10k は jsDelivr から固定した commit で導入します。app・font・CLI は従来どおり各提供元から取得します。script は最初に一度だけ password を尋ね、失敗した段階で log の末尾を示して止まります。同じ command を再実行すれば、止まったところから続けます。
 
-画面のない Mac や、command line の道具だけで足りる場合は `--no-gui` を付けます。iTerm2・VS Code・font と iTerm2 の profile を飛ばします。途中の `-` が `$0` を埋めるので、option が script まで届きます。mirror 方式と併用できます。
+GUI を使わない Mac や、command line の道具だけで足りる場合は `--no-gui` を付けます。iTerm2・VS Code・font と iTerm2 の profile を飛ばします。途中の `-` が `$0` を埋めるので、option が script まで届きます。mirror 方式と併用できます。
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
 ```
 
-`setup/macos/` 配下の変更が `main` に入ると、GitHub の macOS runner でこの方式を二度実行します。二度目は何も導入しないことが条件です。
+`setup/macos/` 配下の変更が `main` に入ると、GitHub の macOS runner で `--no-gui` を付けて実際に二度実行します。二度目は何も導入しないことが条件です。
 
 ## 依存する上流
 

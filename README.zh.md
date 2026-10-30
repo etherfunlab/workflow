@@ -4,23 +4,23 @@
 
 ## 主动降噪
 
-许多外行 vibe coder 缺少一种能力：主动降噪。用热力学来比喻，就是减熵。如果没有判断力去修正 AI 的产出，放任 agent 一直跑某个任务，上下文迟早被噪声淹没。
+许多外行 vibe coder 缺少一种能力：主动降噪。用热力学来比喻，就是减熵。如果没有判断力去修正 AI 的产出，放任 agent 一直执行某个任务，上下文迟早被噪声淹没。
 
-这个仓 follow Claude 的宪法 AI 思想：先立原则、讲清理由，具体的规矩从原则里推出来。「心法速查」那九条就是这里的原则。
+这个仓遵循 Claude 的宪法 AI 思想：先立原则、讲清理由，具体的规矩从原则中推导出来。「心法速查」那九条就是这里的原则。
 
 > 引用：Anthropic，[Claude's new constitution](https://www.anthropic.com/news/claude-new-constitution)（2026-01-22）；全文见 [Claude's Constitution](https://www.anthropic.com/constitution)；方法出处 [Constitutional AI: Harmlessness from AI Feedback](https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback)（2022）。
 
 ## 纪律
 
-纪律是公认的工程实践，照做就行。第一张表就是[根目录 CLAUDE.md 模板](templates/dev-root/README.zh.md)的内容，装在各仓上一层的目录里，对下面每个仓都生效；第二张表由 [engineering 模块](modules/engineering/README.zh.md)装进各仓。
+纪律是公认的工程实践，照做就行。第一张表就是[根目录 CLAUDE.md 模板](templates/dev-root/README.zh.md)的内容，装在各仓上一层的目录里，对下面每个仓都生效；第二张表由 [engineering 模块](modules/engineering/README.zh.md)安装到各仓。
 
 **跨仓纪律**：
 
 | 事实 | 一句话 |
 |---|---|
-| prod 数据唯一通道，分析类仓只读 | 所有仓查线上都只走一条封好的命令；审计、报告、账务这类仓只读，做产品的仓可以查改。原文不回显终端、不进报告，聚合在本地做 |
+| prod 数据唯一通道，分析类仓只读 | 所有仓查询线上数据都只用一条封装好的命令；审计、报告、账务这类仓只读，做产品的仓可以查改。原文不回显终端、不进报告，聚合在本地做 |
 | 公开仓对外纪律 | 公开仓的 issue / PR 不出现私仓名、内部名、prod URL；实测证据匿名化给出 |
-| 一次只开一个 PR | 两个 PR 并行内容会缠在一起，解冲突的代价归人；开新 PR 被拒就停下来问 |
+| 一次只开一个 PR | 两个 PR 并行内容会缠在一起，解冲突的代价归人；创建新 PR 被拒就停下来问 |
 | 数字标窗口、按部署切段 | 报告里的数字必须标取数窗口；一次部署就是一个 era，跨 era 的数据不混算 |
 | 花用户钱的 API 一轮一停 | 按次计费的外部 API 不自动多轮迭代；只重试同一次调用的瞬时错误 |
 | 观感判官在人脑 | 观感、排版、文案语气不写自动断言；出齐约 3 个候选并排给人挑，停下等人挑是正确终点 |
@@ -32,7 +32,7 @@
 | 事实 | 一句话 |
 |---|---|
 | KISS | 三处相似代码胜过一个早产的抽象；不为还没出现的需求留扩展点 |
-| 一个事实一个权威源 | 数值、状态、判定条件各钉一处，其余一律派生 |
+| 一个事实一个权威源 | 数值、状态、判定条件各定一处，其余一律派生 |
 | schema 与接口只认源码 | schema 以迁移文件为准，接口以代码为准，文档不存副本 |
 | 先复用再新增接口 | 加接口前先找现成的；拿不准放前端还是后端就先问 |
 | 调参降错不清零 | 逼近零是在拟合这批语料的噪声；指标持平不是待办 |
@@ -42,7 +42,7 @@
 | 外键建表时就定 | 引用列建表那次就加外键；可空性与 ON DELETE 一起定；每个外键配索引 |
 | 删就删干净 | 删掉的代码、配置、文档不在原处留墓碑，要交代就写进 commit message；changelog、迁移、runbook 照常记录变更；删后真被加回来过的，才留一句「勿加回：X，原因 Y」 |
 
-还有一条是我们的主张，不算公认，一并装在 engineering 模块里：**先放再收**。尺度、能力、权限先放开跑，看清真实上限和实际用法再收。收的是门槛（条件、档位、冷却、代价），不是把能力拔掉。没有实测过的兜底，不提前收紧。放开那一步要留下读数。
+还有一条是我们的主张，不算公认，一并装在 engineering 模块里：**先放再收**。尺度、能力、权限先放开使用，看清真实上限和实际用法再收。收的是门槛（条件、档位、冷却、代价），不是把能力拔掉。没有实测过的兜底，不提前收紧。放开那一步要留下测量值。
 
 ## 心法速查
 
@@ -70,7 +70,7 @@
 
 ### 仓库管理
 
-Git repo 就是最好的记忆库加上下文库。commit 加 PR 的设计不但方便人类团队干活，也能很好地组织 agent 团队。想同步 memory，在 repo 根目录建一个 `.memory/`，再加上 post-hook 就搞定，根本不需要额外的记忆管理。
+Git repo 就是最好的记忆库加上下文库。commit 加 PR 的设计不但方便人类团队干活，也能很好地组织 agent 团队。想同步 memory，在 repo 根目录建一个 `.memory/`，再加上 post-hook 就能同步，根本不需要额外的记忆管理。
 
 ### 菜就多练
 
@@ -78,11 +78,11 @@ Git repo 就是最好的记忆库加上下文库。commit 加 PR 的设计不但
 
 ### 权威唯一
 
-权威文档只存一份，并且写进记忆，告诉 agent 要去哪读。一开始我建了一个文档库，把 spec、plan、milestone、schema、API 全放进去，后来发现字段定义东一块西一块：有的在文档库，有的在代码里，有的在项目 repo 自己的 `docs/`。于是我约定：文档库只放项目全局的 overall spec 和给人看的文档，spec 放项目自己的 `docs/superpowers/`，schema 定义只认 `migration/*.sql`，接口定义只认代码。我让 agent 整理的 Rust 名词对照表就属于给人看的文档，方便我读懂 agent 写 Rust 时做了啥。
+权威文档只存一份，并且写进记忆，告诉 agent 要去哪读。一开始我建了一个文档库，把 spec、plan、milestone、schema、API 全放进去，后来发现字段定义散在各处：有的在文档库，有的在代码里，有的在项目 repo 自己的 `docs/`。于是我约定：文档库只放项目全局的 overall spec 和给人看的文档，spec 放项目自己的 `docs/superpowers/`，schema 定义只认 `migration/*.sql`，接口定义只认代码。我让 agent 整理的 Rust 名词对照表就属于给人看的文档，方便我读懂 agent 写 Rust 时做了什么。
 
 ### CLI 互调
 
-CLI 之间可以互相调用。例如 Claude Code 当主驾，可以 call gh 来管 PR 和 merge，call codex 来审代码，call `supabase db query --linked` 来查改数据库，call fly 看服务器 log 等。
+CLI 之间可以互相调用。例如 Claude Code 当主驾，可以调用 gh 管理 PR 和 merge，调用 codex 审代码，调用 `supabase db query --linked` 查询和修改数据库，调用 fly 查看服务器 log 等。
 
 ### 留心接口
 
@@ -90,7 +90,7 @@ Claude Code 有时会不小心造出新接口。写记忆提醒它复用现有�
 
 ### 先聊再跑
 
-不确定需求怎么实现时，除了用 superpowers、gstack 这类 skill，还可以先和网页版 LLM（例如 ChatGPT、Grok）讨论，让它生成 prompt，再丢给 Claude Code 跑 brainstorming。这比直接用大白话咏唱强。
+不确定需求怎么实现时，除了用 superpowers、gstack 这类 skill，还可以先和网页版 LLM（例如 ChatGPT、Grok）讨论，让它生成 prompt，再交给 Claude Code 执行 brainstorming。这比直接用大白话咏唱强。
 
 ### 跨仓开单
 
@@ -101,7 +101,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | 模块 | 解决什么 | 装进你仓里的 |
 |---|---|---|
 | [writing](modules/writing/README.zh.md) | 写作规范、用词规范、中文排版、日文用字、篇级写作宪法 | `.claude/rules/writing.md`（其他 agent：AGENTS.md 一节）＋ 仓根 `WRITING.md` |
-| [checkup](modules/checkup/README.zh.md) | 定期体检规则文件 | skill `rules-checkup`；可选升级提醒 hook（仅 Claude Code） |
+| [checkup](modules/checkup/README.zh.md) | 定期体检规则文件 | skill `rules-checkup`；可选的 Claude Code 升级后提醒 hook |
 | [rules-files](modules/rules-files/README.zh.md) | 怎么写 CLAUDE.md / AGENTS.md | `.claude/rules/rules-files.md`（其他 agent：AGENTS.md 一节） |
 | [engineering](modules/engineering/README.zh.md) | 工程姿态 | AGENTS.md 一节 |
 | [carriers](modules/carriers/README.zh.md) | 每句话写在哪 | AGENTS.md 一节 |
@@ -112,7 +112,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 
 ## 仓库模板
 
-新项目一律先铺 `base`，再按项目类型叠一层。已有项目也可以只叠后者。
+新项目一律先安装 `base`，再按项目类型添加一层模板。已有项目也可以只添加后者。
 
 | 模板 | 给谁 | 装进你仓里的 |
 |---|---|---|
@@ -122,7 +122,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 
 ## 补充 skills
 
-EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。接线时 agent 会单独列出它们，要哪个装哪个。
+EtherFun Lab 做项目时积累的几个 skill，放在 [`skills/`](skills/)。接线时 agent 会单独列出它们，要哪个装哪个。
 
 | skill | 解决什么 | 给谁 |
 |---|---|---|
@@ -146,7 +146,7 @@ EtherFun Lab 做项目时攒下的几个 skill，放在 [`skills/`](skills/)。�
 SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
 ```
 
-本仓文件从 jsDelivr 拉，Homebrew 走中科大（USTC）镜像，oh-my-zsh 在 GitHub 连不上时改从 gitee 镜像 clone，powerlevel10k 从 jsDelivr 按固定 commit 下载。app、字体和 CLI 仍从各家官方下载。脚本只在开头要一次密码，出错就停在那一步并给出日志末尾；同一条命令重跑，会从停下的地方接着装。
+本仓文件从 jsDelivr 下载，Homebrew 使用中科大（USTC）镜像，oh-my-zsh 在 GitHub 连不上时改从 gitee 镜像 clone，powerlevel10k 从 jsDelivr 按固定 commit 下载。app、字体和 CLI 仍从各家官方下载。脚本只在开头要一次密码，出错就停在那一步并给出日志末尾；同一条命令重跑，会从停下的地方接着装。
 
 没有图形界面的 Mac，或只要命令行工具时，加 `--no-gui`：不装 iTerm2、VS Code 和字体，也不写 iTerm2 profile。中间的 `-` 占住 `$0`，参数才能传到脚本；可与镜像模式同用。
 
@@ -154,7 +154,7 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)" - --no-gui
 ```
 
-`setup/macos/` 下的改动进了 `main`，就在 GitHub 的 macOS runner 上用这个模式真跑两遍：第二遍必须什么都不装。
+`setup/macos/` 下的改动进了 `main`，就在 GitHub 的 macOS runner 上加 `--no-gui` 实际执行两遍：第二遍必须什么都不装。
 
 ## 依赖的上游
 
