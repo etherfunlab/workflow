@@ -151,6 +151,24 @@ EtherFun Lab が project を進める中で溜めた skill をいくつか、[`s
 | [ios-keyboard-page-shift](skills/ios-keyboard-page-shift/README.en.md) | iPhone で keyboard を閉じたあと画面が元に戻らない：まず層を切り分け、それから直す | mobile 向け Web page を作るチーム |
 | [macos-disk-cleanup](skills/macos-disk-cleanup/README.en.md) | Mac の disk が満杯に近い：build 成果物と cache を、消してよいか一つずつ確認してから消す | Mac で開発する人 |
 
+## 環境構築 script
+
+[`setup/macos/install.sh`](setup/macos/install.sh) は Apple Silicon の Mac を EtherFun Lab の作業環境に整えます。Xcode Command Line Tools と Homebrew、oh-my-zsh・powerlevel10k と zsh-syntax-highlighting・zsh-autosuggestions・zsh-completions の三つの plugin を入れた zsh、MesloLGS NF の font と Ayu Mirage の配色を設定した iTerm2、それに VS Code、miniconda、Claude Code、Codex、Grok CLI です。`~/.zshrc` と `~/.p10k.zsh` は同じ directory の雛形から書き込み、既存のものが異なれば先に backup を取ります。`~/.zprofile` には Homebrew を追加します。別の方法で導入済みの app や CLI は Homebrew の管理下に移し、最後の要約で、この Mac に残った以前の導入を一覧にします。
+
+新しい Mac では Terminal で実行します。
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/etherfunlab/workflow/main/setup/macos/install.sh)"
+```
+
+通信が遅い、または制限された環境では mirror 方式を使います。
+
+```bash
+SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/etherfunlab/workflow@main/setup/macos/install.sh)"
+```
+
+この repo の file は jsDelivr から、Homebrew は中国科学技術大学（USTC）の mirror から取得し、oh-my-zsh は GitHub に繋がらないとき gitee の mirror から clone し、powerlevel10k は jsDelivr から固定した commit で導入します。app・font・CLI は従来どおり各提供元から取得します。script は最初に一度だけ password を尋ね、失敗した段階で log の末尾を示して止まります。同じ command を再実行すれば、止まったところから続けます。
+
 ## 依存する上流
 
 - [superpowers](https://github.com/obra/superpowers)：brainstorming → spec → plan → 実装の流れ
@@ -159,6 +177,7 @@ EtherFun Lab が project を進める中で溜めた skill をいくつか、[`s
 - [humanizer](https://github.com/blader/humanizer)：英語の推敲
 - [codex CLI](https://github.com/openai/codex)：review module
 - [OpenCC](https://github.com/BYVoid/OpenCC)：zh-hant-converter
+- [Homebrew](https://brew.sh)、[oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)、[powerlevel10k](https://github.com/romkatv/powerlevel10k)：環境構築 script
 
 ## License
 

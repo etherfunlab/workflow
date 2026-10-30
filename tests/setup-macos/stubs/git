@@ -1,0 +1,11 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+# clone makes <dir>/.git unless the URL matches the glob $STUB_GIT_FAIL.
+[ "$1" = clone ] || exit 0
+shift; url= dir=
+for a in "$@"; do
+  case "$a" in -*) ;; *) if [ -z "$url" ]; then url=$a; else dir=$a; fi ;; esac
+done
+case "$url" in ${STUB_GIT_FAIL:-^}) echo "fatal: unable to access $url" >&2; exit 128 ;; esac
+mkdir -p "$dir/.git"
+case "$url" in *powerlevel10k*) echo "# p10k" > "$dir/powerlevel10k.zsh-theme" ;; esac

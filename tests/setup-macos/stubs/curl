@@ -1,0 +1,11 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+# Serves $STUB_HTTP/<url with : and / turned into _>; 22 when there is none.
+out= url=
+while [ $# -gt 0 ]; do
+  case "$1" in -o) out=$2; shift ;; http*) url=$1 ;; esac
+  shift
+done
+f="$STUB_HTTP/$(printf %s "$url" | tr ":/" "__")"
+[ -f "$f" ] || { echo "curl: (22) The requested URL returned error: 404" >&2; exit 22; }
+if [ -n "$out" ]; then mkdir -p "$(dirname "$out")"; cat "$f" > "$out"; else cat "$f"; fi

@@ -1,0 +1,45 @@
+#!/bin/sh
+printf '%s\n' "$(basename "$0") $*" >> "$STUB_LOG"
+# Installed names live in $STUB_BREW_STATE, casks as cask:<name>.
+cmd=$1; shift
+kind=formula force=0 adopt=0 name=
+for a in "$@"; do
+  case "$a" in --cask) kind=cask ;; --force) force=1 ;; --adopt) adopt=1 ;; -*) ;; *) name=$a ;; esac
+done
+key=$name; [ $kind = cask ] && key="cask:$name"
+fails() {
+  for f in ${STUB_BREW_FAIL:-}; do [ "$f" = "$name" ] && return 0; done
+  return 1
+}
+# Like Homebrew: --force does not take over a binary path that is not this cask's.
+bin_for() { case "$1" in claude-code@latest) echo claude ;; codex) echo codex ;; miniconda) echo conda ;; visual-studio-code) echo code ;; esac; }
+conflicts_for() { case "$1" in miniconda) echo miniforge ;; iterm2) echo "iterm2@beta iterm2@nightly" ;; esac; }
+case "$cmd" in
+  shellenv) echo "export PATH=\"$SETUP_BREW_PREFIX/bin:\$PATH\"" ;;
+  list) /usr/bin/grep -qxF "$key" "$STUB_BREW_STATE" ;;
+  install)
+    [ $force = 1 ] && [ "$adopt" = 1 ] && { echo "Error: Options --adopt and --force are mutually exclusive." >&2; exit 1; }
+    for c in $(conflicts_for "$name"); do
+      /usr/bin/grep -qxF "cask:$c" "$STUB_BREW_STATE" && { echo "Error: Cask '$name' conflicts with '$c'." >&2; exit 1; }
+    done
+    b=$(bin_for "$name")
+    if [ -n "$b" ] && { [ -e "$SETUP_BREW_PREFIX/bin/$b" ] || [ -L "$SETUP_BREW_PREFIX/bin/$b" ]; } && ! /usr/bin/grep -q "stub cask $name" "$SETUP_BREW_PREFIX/bin/$b" 2>/dev/null; then
+      echo "Error: It seems there is already a Binary at '$SETUP_BREW_PREFIX/bin/$b'." >&2; exit 1
+    fi
+    if fails; then
+      echo "==> Downloading https://example.test/$name.tar.gz"
+      echo "curl: (28) Operation timed out after 300000 milliseconds with 0 bytes received" >&2
+      echo "Error: Download failed on Cask $name with message: Download failed" >&2
+      exit 1
+    fi
+    /usr/bin/grep -qxF "$key" "$STUB_BREW_STATE" || echo "$key" >> "$STUB_BREW_STATE"
+    # Casks only: a fake formula binary (grep) would shadow the real tool on PATH.
+    if [ $kind = cask ]; then
+      mkdir -p "$SETUP_BREW_PREFIX/bin"
+      for b in $name $(bin_for "$name"); do printf "#!/bin/sh\n# stub cask $name\n" > "$SETUP_BREW_PREFIX/bin/$b"; chmod +x "$SETUP_BREW_PREFIX/bin/$b"; done
+    fi
+    echo "==> Installing $name" ;;
+  uninstall)
+    /usr/bin/grep -vxF "$key" "$STUB_BREW_STATE" > "$STUB_BREW_STATE.new"; mv "$STUB_BREW_STATE.new" "$STUB_BREW_STATE"
+    rm -f "$SETUP_BREW_PREFIX/bin/$name" ;;
+esac
