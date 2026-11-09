@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-给规则文件定期体检。agent 通读你所有层级的 CLAUDE.md、AGENTS.md、`.claude/rules/` 和 memory 索引，对照它自己当前看到的系统提示，列出该删、该缩、该挪的条目。只出清单，改哪条由你点头。
+给规则文件定期体检。agent 通读你所有层级的 CLAUDE.md（仓根以上的目录也算）、它实际加载的 AGENTS.md、`.claude/rules/` 和 memory，对照它自己当前看到的系统提示，列出该删、该缩、该挪的条目。只出清单，改哪条由你点头。
 
 ## 为什么
 
@@ -16,23 +16,33 @@
 
 ## 怎么用
 
-说「体检一下」或「rules checkup」，或者在升级提醒出现后说一声。agent 按六类列候选：
+说「体检一下」或「rules checkup」，或者在升级提醒出现后说一声。体检有三个范围，写在指令后面，比如 `/rules-checkup repo`；不写就是 `project`：
+
+| 范围 | 查什么 | 这些规则管谁 |
+|---|---|---|
+| `global` | 只查用户级规则文件：`~/.claude/CLAUDE.md` 和 `~/.claude/rules/` | 你自己，在你打开的每个项目里 |
+| `project` | 这个会话加载的全部规则文件，从 `~/.claude` 一路到工作目录，加上 memory | 在这里干活的你 |
+| `repo` | 只查仓库提交进去的文件，不论多深 | 每一个 clone 这个仓的人 |
+
+推荐顺序：先 `global`，再 `project`，最后 `repo`。体检可能把一条规则往下挪一层，下一轮读到的就是那一层的定稿。`repo` 不读仓外的任何东西，所以和仓外规则重复不算候选，依赖仓外路径的规则算事实过期。`global` 多一类候选：只点名某一个项目的规则，建议挪进那个项目。
+
+agent 按六类列候选：
 
 | 类别 | 判据 |
 |---|---|
 | 冗余 | 系统提示已经说了同样的话，方向一致 |
 | 冲突 | 规则和系统提示或另一条规则方向相反 |
 | 事实过期 | 规则里的路径、命令、文件、参数、名称已经不存在；逐个用命令核实，不凭记忆 |
-| 重复 | 同一条规则同时在 memory 和规则文件里，或在两份规则文件里 |
+| 重复 | 同一条规则同时在 memory 和规则文件里、在两份规则文件里，或在同一份文件里出现两次；memory 记的内容仓库或 git 历史里已经有了，也算 |
 | 藏起来的刹车 | 停下或发问的规则，要 agent 先给情况分类才会触发 |
 | 事故现场 | 规则里留着日期、PR 或 issue 号、行号、实测数字、复盘或墓碑 |
 
-每条候选附位置、原文、理由和建议改法。你逐条点头它才改，说「全部」就全改。体检只删、只缩、只挪，不新增规则。改完后，skill 把这次体检的日期写进 `~/.claude/workflow-checkup.json` 的 `last_checkup`。
+每条候选附位置、原文、理由和建议改法。你逐条点头它才改，说「全部」就全改。体检只删、只缩、只挪，不新增规则。`project` 范围的体检一结束，不管你点头了几条，skill 都把当天日期和当前 Claude Code 版本写进 `~/.claude/workflow-checkup.json` 的 `last_checkup` 和 `last_version`。
 
 ## 装进你仓里的是什么
 
 - skill `rules-checkup`，装在你选的 skills 目录。
-- 可选（仅 Claude Code）：SessionStart hook `checkup-reminder.sh`，装在 `~/.claude/hooks/`，注册在用户级的 `~/.claude/settings.json`。它发现 `claude --version` 和上次记录的不同，就在会话开头提醒一次，之后不再提醒；它从不自己执行体检。它把上次见到的版本记在 `~/.claude/workflow-checkup.json` 的 `last_version`。
+- 可选（仅 Claude Code）：SessionStart hook `checkup-reminder.sh`，装在 `~/.claude/hooks/`，注册在用户级的 `~/.claude/settings.json`。它发现 `claude --version` 和上次记录的不同，就在会话开头提醒一次，之后不再提醒；它从不自己执行体检。距上次体检（`last_checkup`）不满 14 天时它不出声，等满了再提醒；天数可用环境变量 `WORKFLOW_CHECKUP_MIN_DAYS` 改。它把首次运行或上次提醒时的版本记在 `~/.claude/workflow-checkup.json` 的 `last_version`。
 
 ## 依赖
 
