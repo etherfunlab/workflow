@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-给规则文件定期体检。agent 通读你所有层级的 CLAUDE.md、AGENTS.md、`.claude/rules/` 和 memory 索引，对照它自己当前看到的系统提示，列出该删、该缩、该挪的条目。只出清单，改哪条由你点头。
+给规则文件定期体检。agent 通读你所有层级的 CLAUDE.md、AGENTS.md（仓根以上的目录也算）、`.claude/rules/` 和 memory，对照它自己当前看到的系统提示，列出该删、该缩、该挪的条目。只出清单，改哪条由你点头。
 
 ## 为什么
 
@@ -23,7 +23,7 @@
 | 冗余 | 系统提示已经说了同样的话，方向一致 |
 | 冲突 | 规则和系统提示或另一条规则方向相反 |
 | 事实过期 | 规则里的路径、命令、文件、参数、名称已经不存在；逐个用命令核实，不凭记忆 |
-| 重复 | 同一条规则同时在 memory 和规则文件里，或在两份规则文件里 |
+| 重复 | 同一条规则同时在 memory 和规则文件里、在两份规则文件里，或在同一份文件里出现两次；memory 记的内容仓库或 git 历史里已经有了，也算 |
 | 藏起来的刹车 | 停下或发问的规则，要 agent 先给情况分类才会触发 |
 | 事故现场 | 规则里留着日期、PR 或 issue 号、行号、实测数字、复盘或墓碑 |
 
@@ -32,7 +32,7 @@
 ## 装进你仓里的是什么
 
 - skill `rules-checkup`，装在你选的 skills 目录。
-- 可选（仅 Claude Code）：SessionStart hook `checkup-reminder.sh`，装在 `~/.claude/hooks/`，注册在用户级的 `~/.claude/settings.json`。它发现 `claude --version` 和上次记录的不同，就在会话开头提醒一次，之后不再提醒；它从不自己执行体检。它把上次见到的版本记在 `~/.claude/workflow-checkup.json` 的 `last_version`。
+- 可选（仅 Claude Code）：SessionStart hook `checkup-reminder.sh`，装在 `~/.claude/hooks/`，注册在用户级的 `~/.claude/settings.json`。它发现 `claude --version` 和上次记录的不同，就在会话开头提醒一次，之后不再提醒；它从不自己执行体检。距上次体检（`last_checkup`）不满 14 天时它不出声，等满了再提醒；天数可用环境变量 `WORKFLOW_CHECKUP_MIN_DAYS` 改。它把上次提醒时的版本记在 `~/.claude/workflow-checkup.json` 的 `last_version`。
 
 ## 依赖
 

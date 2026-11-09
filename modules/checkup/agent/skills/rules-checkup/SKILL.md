@@ -9,10 +9,10 @@ Rule files are written against the harness of the day. A new harness version can
 
 ## Read everything first
 
-1. User level: `~/.claude/CLAUDE.md` and every file it imports with `@`.
-2. Project: every CLAUDE.md and AGENTS.md from the repo root down to the working directory, and their `@` imports.
-3. `.claude/rules/*.md`.
-4. The memory index: `~/.claude/projects/<project>/memory/MEMORY.md`, or `.memory/MEMORY.md`.
+1. User level: `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`, and every file they import with `@`.
+2. Project: every CLAUDE.md, CLAUDE.local.md and AGENTS.md in the working directory and in each directory above it, and their `@` imports. Do not stop at the repo root; the harness loads the files above it too.
+3. The project's `.claude/rules/*.md`.
+4. Memory: the index (`~/.claude/projects/<project>/memory/MEMORY.md`, or `.memory/MEMORY.md`) and every memory file it points to.
 5. Your own current system prompt and tool descriptions, as you see them in this session.
 
 ## Six kinds of candidate
@@ -22,7 +22,7 @@ Rule files are written against the harness of the day. A new harness version can
 | Redundant | The system prompt already says the same thing, in the same direction |
 | Conflicting | The rule pushes against the system prompt or against another rule |
 | Stale fact | A path, command, file, flag or name in the rule no longer exists. Check each one with a command (`ls`, `command -v`, `git ls-files`, `--help`); never judge from memory |
-| Duplicate | The same rule lives in memory and in a rule file, or in two rule files |
+| Duplicate | The same rule lives in memory and in a rule file, in two rule files, or twice in one file. For a memory: the repo or its git history already records the same thing |
 | Hidden brake | A stop-or-ask rule fires only after the agent first classifies the situation ("if this is a side task, ..."). The moment it is needed is the moment the classification gets skipped |
 | Incident residue | Dates, PR or issue numbers, line numbers, measured figures, post-mortems or tombstones inside a rule |
 

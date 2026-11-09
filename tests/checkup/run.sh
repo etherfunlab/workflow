@@ -23,6 +23,13 @@ t_no_out "no second reminder" "." run 2.1.0
 printf '{"last_version":"2.1.0","last_checkup":"2026-10-01"}' > "$state"
 run 2.2.0 >/dev/null
 t_out "last_checkup preserved" '"last_checkup": ?"2026-10-01"' cat "$state"
+printf '{"last_version":"2.2.0","last_checkup":"%s"}' "$(date +%F)" > "$state"
+t_no_out "recent checkup silences the reminder" "." run 2.3.0
+t_out "version kept while silenced" '"last_version": ?"2\.2\.0"' cat "$state"
+printf '{"last_version":"2.2.0","last_checkup":"2000-01-01"}' > "$state"
+t_out "old checkup reminds" "2\.2\.0 to 2\.3\.0.*rules-checkup" run 2.3.0
+printf '{"last_version":"2.2.0","last_checkup":"not-a-date"}' > "$state"
+t_out "unreadable checkup date reminds" "2\.2\.0 to 2\.3\.0" run 2.3.0
 BIN="$tmp/missing" t_exit "missing claude exits 0" 0 run 9.9.9
 BIN="$tmp/missing" t_no_out "missing claude is silent" "." run 9.9.9
 t_true "hanging claude returns within 8s" bash -c "start=\$SECONDS; env CLAUDE_BIN='$stub' WORKFLOW_CHECKUP_STATE='$state' STUB_VER=x STUB_SLEEP=30 bash '$hook' >/dev/null; [ \$((SECONDS-start)) -lt 8 ]"
