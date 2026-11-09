@@ -16,7 +16,17 @@ A rule in the context raises the odds that it is followed, nothing more. Reread 
 
 ## How to use it
 
-Say "rules checkup" (or 体检一下), or say it after the upgrade reminder appears. The agent lists candidates in six kinds:
+Say "rules checkup" (or 体检一下), or say it after the upgrade reminder appears. A checkup has three scopes, written after the command, as in `/rules-checkup repo`; with none given it is `project`:
+
+| Scope | What it checks | Whose rules these are |
+|---|---|---|
+| `global` | Only `~/.claude` | Yours, in every project you open |
+| `project` | Every rule file this session loads, from `~/.claude` down to the working directory, plus memory | Yours, working here |
+| `repo` | Only the files the repository commits, at any depth | Everyone's who clones the repo |
+
+Recommended order: `global` first, then `project`, then `repo`. A checkup can move a rule down a layer, and the next pass then reads that layer in its final form. `repo` reads nothing outside the repo, so repeating a rule that lives outside it is no candidate, and a rule that depends on a path outside it counts as a stale fact.
+
+The agent lists candidates in six kinds:
 
 | Kind | Test |
 |---|---|
@@ -27,7 +37,7 @@ Say "rules checkup" (or 体检一下), or say it after the upgrade reminder appe
 | Hidden brake | A stop-or-ask rule that fires only after the agent classifies the situation |
 | Incident residue | Dates, PR or issue numbers, line numbers, measured figures, post-mortems or tombstones inside a rule |
 
-Each candidate comes with its location, the rule text, the reason and a proposed change. Nothing changes until you approve the item; "all" approves everything. A checkup only deletes, shortens or moves rules; it never adds one. After applying changes, the skill records the date as `last_checkup` in `~/.claude/workflow-checkup.json`.
+Each candidate comes with its location, the rule text, the reason and a proposed change. Nothing changes until you approve the item; "all" approves everything. A checkup only deletes, shortens or moves rules; it never adds one. After applying changes in the `project` scope, the skill records the date as `last_checkup` in `~/.claude/workflow-checkup.json`.
 
 ## What gets installed
 
