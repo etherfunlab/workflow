@@ -13,7 +13,7 @@ The scope comes as the skill's argument or in the user's words: `rules-checkup r
 
 | Scope | Covers | Whose rules |
 |---|---|---|
-| `global` | Only `~/.claude` | The user's, in every project they open |
+| `global` | Only the user-level rule files: `~/.claude/CLAUDE.md` and `~/.claude/rules/` | The user's, in every project they open |
 | `project` | Every rule file this session loads, from `~/.claude` down to the working directory, and memory | This user's, working here |
 | `repo` | Only what the repository commits, at any depth | Everyone's who clones it |
 
@@ -23,19 +23,21 @@ Candidates come only from the files in scope. State the scope in the first line 
 
 ## Read everything first
 
-In every scope, also read your own current system prompt and tool descriptions, as you see them in this session.
+In every scope, also read your own current system prompt and tool descriptions, as you see them in this session. "System prompt" here means the harness's own text. Rule files and memory that the harness loaded into your context are not part of it, even though they sit beside it.
+
+In `global` and `repo`, judge Redundant and Conflicting only against that system prompt and the files in scope. A rule that another layer happens to repeat stays: the other layer is not there for every project, or for every clone.
 
 ### `global`
 
 1. `~/.claude/CLAUDE.md`, every `.md` file under `~/.claude/rules/`, and every file they import with `@`.
 
-A global rule is paid for in every project. One more test applies here: a rule that names a single repository, project or product is a candidate to move down into that project.
+A global rule is paid for in every project. One more test applies here: a rule that names a single repository, project or product is a candidate to move down into that project. List these under a heading of their own, "Belongs in one project", after the six kinds.
 
 ### `project`
 
 1. User level: `~/.claude/CLAUDE.md`, every `.md` file under `~/.claude/rules/`, and every file they import with `@`.
 2. Project: every CLAUDE.md, `.claude/CLAUDE.md` and CLAUDE.local.md in the working directory and in each directory above it, and their `@` imports. Do not stop at the repo root; Claude Code loads the ones above it too.
-3. AGENTS.md from the repo root down to the working directory. Above the repo root, read an AGENTS.md only when a CLAUDE.md imports it; nothing loads it otherwise.
+3. AGENTS.md, only where your harness loads it. Claude Code loads one only when a CLAUDE.md imports it. A harness that reads AGENTS.md natively loads it from the repo root down to the working directory. An AGENTS.md this session does not load belongs to the `repo` scope.
 4. Every `.md` file under the project's `.claude/rules/`, subdirectories included.
 5. Memory: the index (`~/.claude/projects/<project>/memory/MEMORY.md`, or `.memory/MEMORY.md`) and every memory file it points to.
 
