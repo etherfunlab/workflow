@@ -27,23 +27,24 @@ In every scope, also read your own current system prompt and tool descriptions, 
 
 ### `global`
 
-1. `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`, and every file they import with `@`.
+1. `~/.claude/CLAUDE.md`, every `.md` file under `~/.claude/rules/`, and every file they import with `@`.
 
 A global rule is paid for in every project. One more test applies here: a rule that names a single repository, project or product is a candidate to move down into that project.
 
 ### `project`
 
-1. User level: `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`, and every file they import with `@`.
-2. Project: every CLAUDE.md, CLAUDE.local.md and AGENTS.md in the working directory and in each directory above it, and their `@` imports. Do not stop at the repo root; the harness loads the files above it too.
-3. The project's `.claude/rules/*.md`.
-4. Memory: the index (`~/.claude/projects/<project>/memory/MEMORY.md`, or `.memory/MEMORY.md`) and every memory file it points to.
+1. User level: `~/.claude/CLAUDE.md`, every `.md` file under `~/.claude/rules/`, and every file they import with `@`.
+2. Project: every CLAUDE.md, `.claude/CLAUDE.md` and CLAUDE.local.md in the working directory and in each directory above it, and their `@` imports. Do not stop at the repo root; Claude Code loads the ones above it too.
+3. AGENTS.md from the repo root down to the working directory. Above the repo root, read an AGENTS.md only when a CLAUDE.md imports it; nothing loads it otherwise.
+4. Every `.md` file under the project's `.claude/rules/`, subdirectories included.
+5. Memory: the index (`~/.claude/projects/<project>/memory/MEMORY.md`, or `.memory/MEMORY.md`) and every memory file it points to.
 
 ### `repo`
 
 Work from the repo root (`git rev-parse --show-toplevel`) and read only tracked files (`git ls-files`):
 
 1. Every CLAUDE.md and AGENTS.md at any depth, including directories this session has not loaded, and their `@` imports.
-2. `.claude/rules/*.md`.
+2. Every `.md` file under `.claude/rules/`, subdirectories included.
 3. `.memory/`, when the repo tracks one: the index and every memory file it points to.
 
 Do not read `~/.claude`, the directories above the repo, or untracked files: a clone has none of them. Two tests change accordingly:
@@ -70,7 +71,7 @@ One numbered list grouped by kind. Each item: `file:line`, the rule (quoted, sho
 
 - Change nothing until the user approves. Approval is per item unless the user says "all".
 - A checkup only removes, shortens or moves rules. It never adds one.
-- After applying approved changes in the `project` scope, record the date: set `last_checkup` (YYYY-MM-DD) in `~/.claude/workflow-checkup.json`, creating the file if needed, with `jq`.
+- When a `project` checkup ends, record it in `~/.claude/workflow-checkup.json` with `jq`, creating the file if needed: set `last_checkup` to today (YYYY-MM-DD) and `last_version` to the first word of `claude --version`. It has ended once the user has answered, whether they approved every item or none. Leave `last_version` alone when there is no `claude` command.
 
 ## Red flags
 

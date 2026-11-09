@@ -37,12 +37,12 @@ The agent lists candidates in six kinds:
 | Hidden brake | A stop-or-ask rule that fires only after the agent classifies the situation |
 | Incident residue | Dates, PR or issue numbers, line numbers, measured figures, post-mortems or tombstones inside a rule |
 
-Each candidate comes with its location, the rule text, the reason and a proposed change. Nothing changes until you approve the item; "all" approves everything. A checkup only deletes, shortens or moves rules; it never adds one. After applying changes in the `project` scope, the skill records the date as `last_checkup` in `~/.claude/workflow-checkup.json`.
+Each candidate comes with its location, the rule text, the reason and a proposed change. Nothing changes until you approve the item; "all" approves everything. A checkup only deletes, shortens or moves rules; it never adds one. As soon as a `project` checkup ends, however many items you approved, the skill writes the day's date and the current Claude Code version to `last_checkup` and `last_version` in `~/.claude/workflow-checkup.json`.
 
 ## What gets installed
 
 - Skill `rules-checkup`, in the skills directory you chose.
-- Optional (Claude Code only): SessionStart hook `checkup-reminder.sh` in `~/.claude/hooks/`, registered in the user-level `~/.claude/settings.json`. When `claude --version` differs from the last recorded version, it reminds you once at session start and then stays quiet; it never runs the checkup itself. It says nothing while the last checkup (`last_checkup`) is less than 14 days old, and reminds once that time has passed; the environment variable `WORKFLOW_CHECKUP_MIN_DAYS` changes the number of days. It records the version at its last reminder as `last_version` in `~/.claude/workflow-checkup.json`.
+- Optional (Claude Code only): SessionStart hook `checkup-reminder.sh` in `~/.claude/hooks/`, registered in the user-level `~/.claude/settings.json`. When `claude --version` differs from the last recorded version, it reminds you once at session start and then stays quiet; it never runs the checkup itself. It says nothing while the last checkup (`last_checkup`) is less than 14 days old, and reminds once that time has passed; the environment variable `WORKFLOW_CHECKUP_MIN_DAYS` changes the number of days. It records the version at its first run or last reminder as `last_version` in `~/.claude/workflow-checkup.json`.
 
 ## Dependencies
 

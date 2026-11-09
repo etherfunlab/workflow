@@ -26,12 +26,15 @@ checked_recently() {
   [ -n "$day" ] || return 1
   perl -MTime::Local -e '
     my ($y, $m, $d) = $ARGV[0] =~ /^(\d{4})-(\d\d)-(\d\d)$/ or exit 1;
-    exit(time - timegm(0, 0, 0, $d, $m - 1, $y) < $ARGV[1] * 86400 ? 0 : 1)' "$day" "$min_days" 2>/dev/null
+    exit 1 if $y < 1970;
+    my $age = time - timegm(0, 0, 0, $d, $m - 1, $y);
+    # A date more than a day ahead is a broken record, not a recent checkup.
+    exit($age > -86400 && $age < $ARGV[1] * 86400 ? 0 : 1)' "$day" "$min_days" 2>/dev/null
 }
 
 if [ "$last" != "$ver" ]; then
   checked_recently && exit 0
-  echo "Claude Code changed from $last to $ver since the last reminder. Rule files were written against the previous harness; suggest to the user that they run the rules-checkup skill. Do not run it unprompted."
+  echo "Claude Code changed from $last to $ver. Rule files were written against the previous harness; suggest to the user that they run the rules-checkup skill. Do not run it unprompted."
   write_state "$ver"
 fi
 exit 0
