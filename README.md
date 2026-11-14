@@ -217,6 +217,7 @@ When changes under `setup/macos/` reach `main`, the installer actually runs twic
 - [human-writing](https://github.com/Tao716/human-writing-skill): Chinese polishing
 - [humanizer](https://github.com/blader/humanizer): English polishing
 - [codex CLI](https://github.com/openai/codex): the review module
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance): the frontend template
 - [OpenCC](https://github.com/BYVoid/OpenCC): zh-hant-converter
 - [Homebrew](https://brew.sh), [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh), [powerlevel10k](https://github.com/romkatv/powerlevel10k): the environment setup script
 

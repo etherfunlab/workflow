@@ -31,4 +31,8 @@ The six files above, at the repo root. In an existing project, a spec file that 
 
 ## Dependencies
 
-None.
+No module or other template. One third-party skill goes with it, and this repo does not ship it: ADOPT shows the upstream link and install command and installs it only when you say yes.
+
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance): current patterns for CSS, HTML and browser APIs, with lightweight fallbacks chosen from Baseline browser-support data, so the agent reaches for native platform features first.
+
+It sends Google anonymous usage data by default, including the search queries the agent writes; set `DISABLE_TELEMETRY=1` in your shell profile to opt out.

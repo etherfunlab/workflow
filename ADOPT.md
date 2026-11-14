@@ -23,7 +23,7 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
    - it has no CLAUDE.md, AGENTS.md or `.claude/` → **new project**;
    - otherwise → **existing project**. Read in full: CLAUDE.md, AGENTS.md, every file they import with `@`, every `.claude/rules/*.md`, `.claude/settings.json`, `.claude/settings.local.json`, and the git hook setup (`git config core.hooksPath`, `.git/hooks/pre-push`, `.githooks/`).
 4. Read the rule files your agent loads from outside the target, for a new project too: the user-level file (Claude Code: `~/.claude/CLAUDE.md`; Codex: `~/.codex/AGENTS.md`) and, for Claude Code, every CLAUDE.md in the target's parent directories, with the files they import. These files do not travel with the repository; section 3 decides what happens to rules found there.
-5. Read every `modules/*/module.json` and `skills/*/module.json` here, and the "What it is" section of each `templates/*/README.en.md`.
+5. Read every `modules/*/module.json` and `skills/*/module.json` here, and the "What it is" and "Dependencies" sections of each `templates/*/README.en.md`.
 
 ## 2. Ask
 
@@ -60,7 +60,7 @@ List every file you will create or change, one line each saying what goes in, me
 
 **Skills** (`skills`): copy each `agent/skills/<name>/` directory to the chosen location, replace placeholders, and keep scripts executable (`chmod +x`). When a skill with the same name already exists there and differs, show the difference and ask whether to replace it, keep the existing one, or skip; never overwrite it silently.
 
-**Third-party skills** (`upstream_skills`): when one is not installed, show the user its URL and the install command from its README; install it only with a yes.
+**Third-party skills** (`upstream_skills`, and those listed under "Dependencies" in each chosen template's `README.en.md`): when one is not installed, show the user its URL and the install command from its README; install it only with a yes.
 
 **Copies** (`copies`): copy `from` to `to` when `to` does not exist.
 
