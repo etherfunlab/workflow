@@ -31,4 +31,8 @@
 
 ## 依赖
 
-无。
+不依赖模块或其他模板。配套一个第三方 skill，本仓不收它的本体：ADOPT 会给出上游链接和安装命令，你点头才装。
+
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance)：CSS、HTML 和浏览器 API 的现代写法，按 Baseline 浏览器支持数据给出轻量回退，让 agent 优先用平台原生能力。
+
+它默认向 Google 发送匿名使用数据，其中包括 agent 生成的搜索词；在 shell 配置里设 `DISABLE_TELEMETRY=1` 即可关闭。

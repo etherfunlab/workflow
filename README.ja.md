@@ -184,6 +184,7 @@ GUI を使わない Mac や、command line の道具だけで足りる場合は 
 - [human-writing](https://github.com/Tao716/human-writing-skill)：中国語の推敲
 - [humanizer](https://github.com/blader/humanizer)：英語の推敲
 - [codex CLI](https://github.com/openai/codex)：review module
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance)：frontend の雛形
 - [OpenCC](https://github.com/BYVoid/OpenCC)：zh-hant-converter
 - [Homebrew](https://brew.sh)、[oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)、[powerlevel10k](https://github.com/romkatv/powerlevel10k)：環境構築 script
 

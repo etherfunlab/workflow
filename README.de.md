@@ -182,6 +182,7 @@ Wenn Änderungen unter `setup/macos/` in `main` ankommen, wird das Installations
 - [human-writing](https://github.com/Tao716/human-writing-skill): Feinschliff für chinesische Texte
 - [humanizer](https://github.com/blader/humanizer): Feinschliff für englische Texte
 - [codex CLI](https://github.com/openai/codex): das Modul review
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance): das Template frontend
 - [OpenCC](https://github.com/BYVoid/OpenCC): zh-hant-converter
 - [Homebrew](https://brew.sh), [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh), [powerlevel10k](https://github.com/romkatv/powerlevel10k): das Einrichtungsskript
 

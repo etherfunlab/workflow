@@ -163,6 +163,7 @@ SETUP_MIRROR=jsdelivr /bin/bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/eth
 - [human-writing](https://github.com/Tao716/human-writing-skill)：中文润色
 - [humanizer](https://github.com/blader/humanizer)：英文润色
 - [codex CLI](https://github.com/openai/codex)：review 模块
+- [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance)：frontend 模板
 - [OpenCC](https://github.com/BYVoid/OpenCC)：zh-hant-converter
 - [Homebrew](https://brew.sh)、[oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)、[powerlevel10k](https://github.com/romkatv/powerlevel10k)：环境配置脚本
 
