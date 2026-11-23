@@ -6,7 +6,7 @@ ct="$root/tests/check_templates.py"
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 
 t_exit "repo templates pass" 0 python3 "$ct"
-for f in AGENTS.md DESIGN.md FONTS.md GRID.md LOCALE.md RELEASE.md; do
+for f in AGENTS.md DESIGN.md FONTS.md GRID.md LOCALE.md RELEASE.md WRITER.md; do
   t_true "frontend has $f" test -f "$root/templates/frontend/$f"
 done
 

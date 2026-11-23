@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-前端项目的仓库模板，叠在 base 之上：多出五份规范文件，外加并进 AGENTS.md 的一节。
+前端项目的仓库模板，叠在 base 之上：多出六份规范文件，外加并进 AGENTS.md 的一节。
 
 | 文件 | 管什么 |
 |---|---|
@@ -13,11 +13,14 @@
 | `GRID.md` | 门面页（landing、法务、更新日志）的容器与栏 |
 | `LOCALE.md` | 一切用户可见文案与 i18n 工作流：源与 fallback、key 命名、腔调、词汇表、错误句式、给译者的硬约束、机器闸门 |
 | `RELEASE.md` | 更新说明与版本号：哪些改动要写、版本规则、格式、分类、语气 |
-| `AGENTS.md` | 并进 base 的 AGENTS.md：五份规范进阅读索引，另加「Frontend」一节，管构建与验证 |
+| `WRITER.md` | 每一类用户可见文字由谁起草、谁定稿、怎么调用：界面文案、更新说明、法务正文、各语译文；写手共守的通则；法务正文的流程 |
+| `AGENTS.md` | 并进 base 的 AGENTS.md：六份规范进阅读索引，另加「Frontend」一节，管构建与验证 |
 
 ## 为什么
 
-前端最容易被 agent 带偏的是观感和文案。每次改样式都凭感觉，改十次就是十种风格；判据写成文件，review 逐条打勾，agent 才有东西可对。拆成五份，是因为这五件事的时机不同：改样式读 DESIGN，动字重读 FONTS，改门面版式读 GRID，改文案读 LOCALE，发版读 RELEASE。五份互不重复，数值只在 token 文件里存一份。
+前端最容易被 agent 带偏的是观感和文案。每次改样式都凭感觉，改十次就是十种风格；判据写成文件，review 逐条打勾，agent 才有东西可对。拆成六份，是因为这六件事的时机不同：改样式读 DESIGN，动字重读 FONTS，改门面版式读 GRID，改文案读 LOCALE，发版读 RELEASE，动笔写字之前读 WRITER。六份互不重复，数值只在 token 文件里存一份。
+
+文案的规矩写在 LOCALE 和 RELEASE，WRITER 只管谁来写。每一类文案交给固定的写手，agent 写 brief、按规范挑候选、跑闸门，不替写手动字。写手直接读 LOCALE 和 RELEASE 的原文，prompt 里不另写一套规则。
 
 ## 怎么用
 
@@ -27,11 +30,13 @@
 
 ## 装进你仓里的是什么
 
-上表六个文件，放在仓根目录。已有项目里同名的规范文件会跳过，并写进报告；AGENTS.md 是合并：行并进同名表格，「Frontend」一节追加在后面。
+上表七个文件，放在仓根目录。已有项目里同名的规范文件会跳过，并写进报告；AGENTS.md 是合并：行并进同名表格，「Frontend」一节追加在后面。
 
 ## 依赖
 
-不依赖模块或其他模板。配套一个第三方 skill，本仓不收它的本体：ADOPT 会给出上游链接和安装命令，你点头才装。
+依赖 [publish 模块](../../modules/publish/README.zh.md)：WRITER.md 里新功能的界面文案归 Gemini 写，入口是该模块的 `ui-copy-gemini` skill。选了本模板，ADOPT 会自动带上 publish，连同它依赖的 writing 模块。
+
+另配套一个第三方 skill，本仓不收它的本体：ADOPT 会给出上游链接和安装命令，你点头才装。
 
 - [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance)：CSS、HTML 和浏览器 API 的现代写法，按 Baseline 浏览器支持数据给出轻量回退，让 agent 优先用平台原生能力。
 

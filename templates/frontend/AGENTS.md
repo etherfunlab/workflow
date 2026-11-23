@@ -9,6 +9,7 @@
 | 4 | `GRID.md` | Container and columns of the public pages. Before changing their layout |
 | 5 | `LOCALE.md` | All user-visible copy and the i18n workflow. Before changing copy |
 | 6 | `RELEASE.md` | Release notes and version numbers. Before writing a note or changing a version |
+| 7 | `WRITER.md` | Who drafts each kind of copy and how to call them. Before writing any user-visible text |
 
 ## Frontend
 
@@ -16,7 +17,7 @@ TODO: stack (framework, styling, i18n library) and the commands for dev, test, t
 
 ### The spec files
 
-- The five files above sit side by side at the repo root, and none repeats another. Token values live only in TODO: the tokens file; the spec files hold the rules.
+- The six files above sit side by side at the repo root, and none repeats another. Token values live only in TODO: the tokens file; the spec files hold the rules.
 - Section numbers are anchors, not order. Code comments and other files cite `DESIGN.md §N`; a number is never changed or reused, and a new section takes the next free number.
 - A part or section that overrides another names the one it overrides.
 
@@ -36,6 +37,6 @@ TODO: stack (framework, styling, i18n library) and the commands for dev, test, t
 
 | Path | What |
 |---|---|
-| `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md` | Frontend specs |
+| `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md` | Frontend specs |
 | TODO: tokens file | Token values: colors, shadows, radii, weights, font stacks |
 | TODO: locale files | Copy, one set per locale |

@@ -128,7 +128,7 @@ GitHub の issue は本当に便利です。いまは repo をまたぐ問題が
 | [carriers](modules/carriers/README.en.md) | 各文をどこに書くか | AGENTS.md の一節 |
 | [memory](modules/memory/README.en.md) | agent の memory を repo に写す | AGENTS.md の一節、`.memory/README.md`、`.githooks/`、同期 hook（Claude Code のみ） |
 | [review](modules/review/README.en.md) | 別の model 系列による code review | skill `codex-review` |
-| [publish](modules/publish/README.en.md) | 成稿の仕上げ三工程 | skill `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`、`precheck.sh` |
+| [publish](modules/publish/README.en.md) | 成稿の仕上げ三工程。新機能の画面文言は Gemini が候補を出す | skill `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`、`ui-copy-gemini`、`precheck.sh` |
 | [repo の雛形](#repo-の雛形) + [ADOPT](ADOPT.md) | project の骨組みと組み込みの手順 | 次の節を参照。加えて `.workflow.lock` |
 
 ## repo の雛形
@@ -138,7 +138,7 @@ GitHub の issue は本当に便利です。いまは repo をまたぐ問題が
 | 雛形 | 対象 | repo に導入されるもの |
 |---|---|---|
 | `base` | すべての新規 project | 索引型の AGENTS.md、`@AGENTS.md` の一行だけが入った CLAUDE.md、`docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | frontend の project | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、AGENTS.md に merge される一節 |
+| [frontend](templates/frontend/README.en.md) | frontend の project | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`、AGENTS.md に merge される一節。publish module も併せて導入 |
 | [dev-root](templates/dev-root/README.en.md) | 複数の repo を束ねる親 directory | 親 directory の CLAUDE.md（repo 横断の規律。自動で読み込まれるのは Claude Code のみ） |
 
 ## 補足 skill

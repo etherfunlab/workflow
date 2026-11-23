@@ -1,7 +1,8 @@
 {
   "name": "publish",
   "principles": [
-    3
+    3,
+    6
   ],
   "role": "skills",
   "depends_on": [
@@ -12,13 +13,15 @@
     "doc-publish",
     "doc-fact-check",
     "doc-polish",
-    "doc-review"
+    "doc-review",
+    "ui-copy-gemini"
   ],
   "hooks": [],
   "git_hooks": [],
   "requires": [
     "perl",
-    "git"
+    "git",
+    "node"
   ],
   "upstream_skills": [],
   "placeholders": {
@@ -29,6 +32,10 @@
     "PUBLISH_CMD": {
       "description": "command that builds or validates the docs before push; empty removes that line",
       "default": ""
+    },
+    "UI_COPY_DRAFT_PATH": {
+      "description": "path to draft.mjs where the ui-copy-gemini skill is installed",
+      "default": "<skills-dir>/ui-copy-gemini/draft.mjs"
     }
   },
   "copies": []
