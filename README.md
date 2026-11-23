@@ -161,7 +161,7 @@ GitHub issues are great. For cross-repo problems, I have one agent open an issue
 | [carriers](modules/carriers/README.en.md) | Where each sentence goes | a section in AGENTS.md |
 | [memory](modules/memory/README.en.md) | Agent memory mirrored into the repo | a section in AGENTS.md, `.memory/README.md`, `.githooks/`; sync hook (Claude Code only) |
 | [review](modules/review/README.en.md) | Code review by a second model family | skill `codex-review` |
-| [publish](modules/publish/README.en.md) | Three-stage finishing pipeline for docs | skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `precheck.sh` |
+| [publish](modules/publish/README.en.md) | Three-stage finishing pipeline for docs; Gemini drafts the interface copy of new features | skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `ui-copy-gemini`, `precheck.sh` |
 | [Repo templates](#repo-templates) + [ADOPT](ADOPT.md) | Project skeletons and the wiring procedure | see the next section, plus `.workflow.lock` |
 
 ## Repo templates
@@ -171,7 +171,7 @@ A new project always starts from `base`, with one template for its kind of proje
 | Template | For | What lands in your repo |
 |---|---|---|
 | `base` | every new project | an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, `docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | frontend projects | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, and a section merged into AGENTS.md |
+| [frontend](templates/frontend/README.en.md) | frontend projects | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md`, and a section merged into AGENTS.md; brings in the publish module |
 | [dev-root](templates/dev-root/README.en.md) | the directory above several repos | a CLAUDE.md in the parent directory (cross-repo discipline; auto-loaded by Claude Code only) |
 
 ## Supplementary skills

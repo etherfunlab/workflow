@@ -107,7 +107,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | [carriers](modules/carriers/README.zh.md) | 每句话写在哪 | AGENTS.md 一节 |
 | [memory](modules/memory/README.zh.md) | 记忆镜像进仓 | AGENTS.md 一节、`.memory/README.md`、`.githooks/`；同步 hook（仅 Claude Code） |
 | [review](modules/review/README.zh.md) | 换一个模型家族审代码 | skill `codex-review` |
-| [publish](modules/publish/README.zh.md) | 成稿收尾三道工序 | skills `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`，`precheck.sh` |
+| [publish](modules/publish/README.zh.md) | 成稿收尾三道工序；新功能的界面文案由 Gemini 出候选 | skills `doc-publish`、`doc-fact-check`、`doc-polish`、`doc-review`、`ui-copy-gemini`，`precheck.sh` |
 | [仓库模板](#仓库模板) + [ADOPT](ADOPT.md) | 项目骨架与接线流程 | 见下一节，外加 `.workflow.lock` |
 
 ## 仓库模板
@@ -117,7 +117,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | 模板 | 给谁 | 装进你仓里的 |
 |---|---|---|
 | `base` | 所有新项目 | 索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md、`docs/superpowers/` |
-| [frontend](templates/frontend/README.zh.md) | 前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`，AGENTS.md 并进一节 |
+| [frontend](templates/frontend/README.zh.md) | 前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`，AGENTS.md 并进一节；连带 publish 模块 |
 | [dev-root](templates/dev-root/README.zh.md) | 管着多个仓的上级目录 | 上一层目录的 CLAUDE.md（跨仓纪律；仅 Claude Code 自动载入） |
 
 ## 补充 skills

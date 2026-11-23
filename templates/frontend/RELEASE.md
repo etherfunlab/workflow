@@ -73,7 +73,7 @@ TODO: whether notes for integrators (API, SDK) keep a separate log with a "Break
 
 ## 6. Workflow
 
-- TODO: who writes the note and when (for example at release time, from the PRs merged since the last release).
+- Who writes the note: `WRITER.md` §1. TODO: when (for example at release time, from the PRs merged since the last release).
 - A PR with a user-visible change says so in its description, in one line a user could read; the note is assembled from those lines.
 - The note ships with the release, not after it. Translations follow `LOCALE.md` §6 and must be complete for the required locales before the release goes out.
 - A wrong note that has shipped is corrected in place, and the correction says what changed.

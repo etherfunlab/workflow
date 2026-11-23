@@ -28,7 +28,7 @@ Modules cite principles by number in `module.json`: 2 Constraints first, 3 Code 
 ## 2. Ask
 
 1. **Modules.** Show a table: name, one line on what it does, the principles it comes from, **[CC]** when it needs Claude Code. When a chosen module has `depends_on`, add those modules and say so. List `skills/` separately as supplementary skills.
-2. **Templates.** List each `templates/*/` other than `base`, one line each, and ask which to add. A new project always gets `base`; an existing project gets only the templates chosen here.
+2. **Templates.** List each `templates/*/` other than `base`, one line each, and ask which to add. A new project always gets `base`; an existing project gets only the templates chosen here. When a chosen template's "Dependencies" section names a module, add that module and say so, as for `depends_on`.
 3. **Language** of rule text and template files: Chinese or English.
 4. **Skill location**, only when a chosen module installs skills: project (`.claude/skills/`, committed and shared; Codex: `.agents/skills/`) or user (`~/.claude/skills/`; Codex: `~/.agents/skills/`).
 5. **Optional hooks [CC]:** each entry in the chosen modules' `hooks` with `"optional": true`.

@@ -126,7 +126,7 @@ GitHub Issues sind großartig. Bei Problemen über Repo-Grenzen hinweg lasse ich
 | [carriers](modules/carriers/README.en.md) | Wo jeder Satz hingehört | ein Abschnitt in der AGENTS.md |
 | [memory](modules/memory/README.en.md) | Agent-Memory, ins Repo gespiegelt | ein Abschnitt in der AGENTS.md, `.memory/README.md`, `.githooks/`; Sync-Hook (nur Claude Code) |
 | [review](modules/review/README.en.md) | Code-Review durch eine zweite Modellfamilie | Skill `codex-review` |
-| [publish](modules/publish/README.en.md) | Dreistufige Abschluss-Pipeline für Dokumente | Skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `precheck.sh` |
+| [publish](modules/publish/README.en.md) | Dreistufige Abschluss-Pipeline für Dokumente; Gemini entwirft die Oberflächentexte neuer Features | Skills `doc-publish`, `doc-fact-check`, `doc-polish`, `doc-review`, `ui-copy-gemini`, `precheck.sh` |
 | [Repo-Templates](#repo-templates) + [ADOPT](ADOPT.md) | Projektgerüste und der Ablauf zum Einbinden | siehe nächster Abschnitt, dazu `.workflow.lock` |
 
 ## Repo-Templates
@@ -136,7 +136,7 @@ Ein neues Projekt beginnt immer mit `base`, darüber kommt ein Template für die
 | Template | Für | Landet in deinem Repo |
 |---|---|---|
 | `base` | jedes neue Projekt | eine indexartige AGENTS.md, eine CLAUDE.md mit der einzigen Zeile `@AGENTS.md`, `docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | Frontend-Projekte | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md` und ein in die AGENTS.md gemergter Abschnitt |
+| [frontend](templates/frontend/README.en.md) | Frontend-Projekte | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md` und ein in die AGENTS.md gemergter Abschnitt; bringt das Modul publish mit |
 | [dev-root](templates/dev-root/README.en.md) | das Verzeichnis über mehreren Repos | eine CLAUDE.md im übergeordneten Verzeichnis (Repo-übergreifende Disziplin; wird nur von Claude Code automatisch geladen) |
 
 ## Ergänzende Skills

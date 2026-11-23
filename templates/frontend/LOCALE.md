@@ -2,6 +2,7 @@
 
 > The highest authority on every piece of user-visible text (i18n keys, UI literals, error messages) and on the i18n workflow. Read it before changing copy; review ticks §0.
 > Rules a machine can check are enforced by tests (§8); the rest by review.
+> Who writes each kind of copy, and how to call them: `WRITER.md`.
 
 ## 0. Quick checklist (tick each in review)
 
@@ -71,14 +72,14 @@ One pattern; new messages use it and old ones converge on it:
 
 **During development (new keys with a feature)**
 
-1. TODO: which locales are written in the feature PR, by whom.
+1. TODO: which locales are written in the feature PR. Who writes them: `WRITER.md` §1.
 2. Other locales may lag; the fallback chain shows the source meanwhile. Deleting a key deletes it in every locale.
 3. Review ticks §0; the machine gates (§8) run with the tests.
 
 **Before release**
 
 - Translate what is missing plus every key whose source changed since the last release.
-- TODO: who translates which languages (people, a model, a second model family), and how languages are grouped so a group shares terminology decisions.
+- Who translates which languages: `WRITER.md` §1. TODO: how languages are grouped so a group shares terminology decisions.
 - Translators hand back answers only. A script validates them (§8) and writes them; a batch with one failure is not written and goes back to its translator.
 - Before merging: all gates green, plus a read-through of TODO: how many translated files.
 
