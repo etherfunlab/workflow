@@ -136,7 +136,7 @@ Ein neues Projekt beginnt immer mit `base`, darüber kommt ein Template für die
 | Template | Für | Landet in deinem Repo |
 |---|---|---|
 | `base` | jedes neue Projekt | eine indexartige AGENTS.md, eine CLAUDE.md mit der einzigen Zeile `@AGENTS.md`, `docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | Frontend-Projekte | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md` und ein in die AGENTS.md gemergter Abschnitt; bringt das Modul publish mit |
+| [frontend](templates/frontend/README.en.md) | Frontend-Projekte mit Vue 3.5+ und Tailwind 4 | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md` und ein in die AGENTS.md gemergter Abschnitt; bringt das Modul publish mit |
 | [dev-root](templates/dev-root/README.en.md) | das Verzeichnis über mehreren Repos | eine CLAUDE.md im übergeordneten Verzeichnis (Repo-übergreifende Disziplin; wird nur von Claude Code automatisch geladen) |
 
 ## Ergänzende Skills

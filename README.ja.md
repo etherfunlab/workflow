@@ -138,7 +138,7 @@ GitHub の issue は本当に便利です。いまは repo をまたぐ問題が
 | 雛形 | 対象 | repo に導入されるもの |
 |---|---|---|
 | `base` | すべての新規 project | 索引型の AGENTS.md、`@AGENTS.md` の一行だけが入った CLAUDE.md、`docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | frontend の project | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`、AGENTS.md に merge される一節。publish module も併せて導入 |
+| [frontend](templates/frontend/README.en.md) | Vue 3.5+ と Tailwind 4 の frontend project | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`、AGENTS.md に merge される一節。publish module も併せて導入 |
 | [dev-root](templates/dev-root/README.en.md) | 複数の repo を束ねる親 directory | 親 directory の CLAUDE.md（repo 横断の規律。自動で読み込まれるのは Claude Code のみ） |
 
 ## 補足 skill
