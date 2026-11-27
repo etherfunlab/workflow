@@ -18,6 +18,7 @@ Stack: Vue 3.5 or later and Tailwind CSS 4. TODO: the i18n library, and the comm
 ### The spec files
 
 - The six files above sit side by side at the repo root, and none repeats another. Token values live only in TODO: the tokens file; the spec files hold the rules.
+- Tailwind is configured in CSS: the tokens file declares the tokens with `@theme`, and there is no `tailwind.config.js`.
 - Section numbers are anchors, not order. Code comments and other files cite `DESIGN.md §N`; a number is never changed or reused, and a new section takes the next free number.
 - A part or section that overrides another names the one it overrides.
 
