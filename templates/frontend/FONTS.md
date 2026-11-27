@@ -45,8 +45,8 @@ A weight tier only exists where a real font face renders it.
 
 - Set `font-synthesis-weight: none` on `body`. A missing face then falls back to the nearest real one instead of a faked bold. An element that genuinely needs synthesis gets one named utility, and the files that use it are listed here and pinned by a test.
 - Ship only the weights the tiers use. A request for a lighter weight then lands on the lightest tier, so the font supply itself keeps text from going thinner.
-- Traditional Chinese uses the Hong Kong regional faces (`Noto Sans HK`, `Noto Serif HK`), not TC. The choice is about feel (Traditional Chinese that reads as Hong Kong and Macau), not glyph coverage.
-- System faces in the Traditional Chinese stack lead with their Hong Kong cut too (PingFang HK on Apple; `Noto Sans CJK HK` before `Noto Sans CJK TC` on Android / Linux); a stack that mixes regions draws the same character in two forms on one page. On Windows the Traditional Chinese system sans is JhengHei, which has Taiwan forms; where a tier falls to it, those forms are accepted.
+- Traditional Chinese, whatever its locale tag (`zh-Hant`, `zh-TW`, `zh-HK`), uses the Hong Kong regional faces (`Noto Sans HK`, `Noto Serif HK`), not TC, for the Hong Kong and Macau feel of their glyph forms.
+- System faces in the Traditional Chinese stack lead with their Hong Kong cut too (PingFang HK on Apple; Noto Sans CJK's HK cut before its TC cut on Android / Linux); a stack that mixes regions can draw the same character in two forms on one page. On Windows the Traditional Chinese system sans is JhengHei, which has Taiwan forms; where the table above gives a tier to JhengHei, those forms are accepted.
 
 ## 4. Sizes
 
