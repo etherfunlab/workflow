@@ -117,7 +117,7 @@ GitHub issue 太好用了。现在跨 repo 的问题，我都让 agent 开 issue
 | 模板 | 给谁 | 装进你仓里的 |
 |---|---|---|
 | `base` | 所有新项目 | 索引式的 AGENTS.md、只有一行 `@AGENTS.md` 的 CLAUDE.md、`docs/superpowers/` |
-| [frontend](templates/frontend/README.zh.md) | 前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`，AGENTS.md 并进一节；连带 publish 模块 |
+| [frontend](templates/frontend/README.zh.md) | Vue 3.5+ 与 Tailwind 4 的前端项目 | `DESIGN.md`、`FONTS.md`、`GRID.md`、`LOCALE.md`、`RELEASE.md`、`WRITER.md`，AGENTS.md 并进一节；连带 publish 模块 |
 | [dev-root](templates/dev-root/README.zh.md) | 管着多个仓的上级目录 | 上一层目录的 CLAUDE.md（跨仓纪律；仅 Claude Code 自动载入） |
 
 ## 补充 skills

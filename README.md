@@ -171,7 +171,7 @@ A new project always starts from `base`, with one template for its kind of proje
 | Template | For | What lands in your repo |
 |---|---|---|
 | `base` | every new project | an index-style AGENTS.md, a one-line `@AGENTS.md` CLAUDE.md, `docs/superpowers/` |
-| [frontend](templates/frontend/README.en.md) | frontend projects | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md`, and a section merged into AGENTS.md; brings in the publish module |
+| [frontend](templates/frontend/README.en.md) | frontend projects on Vue 3.5+ and Tailwind 4 | `DESIGN.md`, `FONTS.md`, `GRID.md`, `LOCALE.md`, `RELEASE.md`, `WRITER.md`, and a section merged into AGENTS.md; brings in the publish module |
 | [dev-root](templates/dev-root/README.en.md) | the directory above several repos | a CLAUDE.md in the parent directory (cross-repo discipline; auto-loaded by Claude Code only) |
 
 ## Supplementary skills

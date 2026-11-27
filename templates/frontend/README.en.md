@@ -4,7 +4,7 @@ From the principles: Constraints first, One source of truth.
 
 ## What it is
 
-A repo template for frontend projects, layered on base: six spec files, plus a section merged into AGENTS.md.
+A repo template for frontend projects on Vue 3.5+ and Tailwind 4, layered on base: six spec files, plus a section merged into AGENTS.md.
 
 | File | Governs |
 |---|---|

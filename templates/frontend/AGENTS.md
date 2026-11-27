@@ -13,7 +13,7 @@
 
 ## Frontend
 
-TODO: stack (framework, styling, i18n library) and the commands for dev, test, typecheck, build and end-to-end tests.
+Stack: Vue 3.5 or later and Tailwind CSS 4. TODO: the i18n library, and the commands for dev, test, typecheck, build and end-to-end tests.
 
 ### The spec files
 
